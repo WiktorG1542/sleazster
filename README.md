@@ -2,8 +2,8 @@
 
 * Single and multi-player gameplay.
 * Ability to play against AI opponents.
-* Arcade mode with special abilities.
-* Visually appealing design, engaging graphics and animations
+* Modifications of the gameplay flow that players can choose  
+* Visually appealing design, engaging graphics
 to enhance the gaming experience.
 * In-game chat to enable player communication during gameplay.
 
@@ -12,35 +12,20 @@ to enhance the gaming experience.
 To create a robust and engaging card game website that works seamlessly
 on both desktop and mobile devices, we will pick out and utilize **SOME**
 of the following technologies:
-
-## Frontend:
-
-* React: A popular JavaScript library for building user interfaces,
-enabling a responsive and dynamic user experience.
-* Redux: For state management, ensuring that the game state is
-consistent and easily manageable across components.
-* CSS Frameworks: Such as Tailwind CSS or Bootstrap, to create a
-modern and responsive design quickly.
-* Canvas API: For rendering game graphics and animations, providing a
-smooth gaming experience.
-
-## Backend:
-
-* Node.js: To build the server-side application, allowing for real-time
-communication and efficient handling of multiple requests.
-* Express: A minimal and flexible Node.js web application framework for
-building RESTful APIs to manage user accounts and game data.
-* Socket.IO: For real-time, bidirectional communication between clients
-and the server, enabling multiplayer gameplay.
-
+* Node.js
+* Express
+* Socket.IO
+* React
+* Redux
+* Pixi.js
+* Bootstrap
 
 ## Deployment:
 
-* it will be a node app inshallah
+* Node.js Environment: The backend might be set up as a Node.js
+application, managing real-time data and user interactions effectively.
 * Docker: For containerizing the application, making it easy to
 deploy across different environments.
-* Heroku or Vercel: For hosting the web application with easy
-scaling options.
 * GitHub Actions: For CI/CD to automate testing and deployment
 processes.
 
@@ -60,3 +45,29 @@ the end user when playing:
 ![](./img/2.jpg)
 
 ![](./img/3.jpg)
+
+# Roadmap (until december)
+The plan for november is to build a demo singleplayer version of the base game, to present the 
+mechanics at the core of the game and get familiar with the technologies we will be using. 
+
+## 29.10 - 05.11
+
+Implementation of card structures and rudimentary frontend.
+Backend + Frontend
+
+## 05.11 - 12.11
+
+Implementation of card dealing mechanics and main game loop element (Lying, checking, declaring)
+Backend + Frontend
+
+## 12.11 - 19.11
+
+Implementation of round ending and giving penalties to losing players
+Frontend + Backend
+Testing and debugging
+
+## 19.11 - 26.11
+
+Final polish of the prototype, simple main menu
+
+
