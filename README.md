@@ -2,9 +2,7 @@
 
 * Single and multi-player gameplay.
 * Ability to play against AI opponents.
-* Account system with statistics and leaderboards.
 * Arcade mode with special abilities.
-* Skin system for players.
 * Visually appealing design, engaging graphics and animations
 to enhance the gaming experience.
 * In-game chat to enable player communication during gameplay.
@@ -35,15 +33,10 @@ building RESTful APIs to manage user accounts and game data.
 * Socket.IO: For real-time, bidirectional communication between clients
 and the server, enabling multiplayer gameplay.
 
-## Database:
-
-* MongoDB: A NoSQL database that works well for storing user data,
-game statistics, and leaderboards.
-* Redis: For caching and session management, ensuring quick access
-to frequently requested data.
 
 ## Deployment:
 
+* it will be a node app inshallah
 * Docker: For containerizing the application, making it easy to
 deploy across different environments.
 * Heroku or Vercel: For hosting the web application with easy
@@ -56,3 +49,14 @@ processes.
 Responsive Web Design: Using media queries and flexible layouts to
 ensure the game is playable on various devices, including smartphones
 and tablets.
+
+# FrontEnd design
+
+Here are some mind maps of various views that will be accessible to
+the end user when playing:
+
+![](./img/1.jpg)
+
+![](./img/2.jpg)
+
+![](./img/3.jpg)
