@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Logs
+logs
+*.log
+
+# Environment variables
+.env
+
+# System files
+.DS_Store
+.vscode/
+.idea/
