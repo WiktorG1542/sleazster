@@ -1,3 +1,22 @@
+# First single player demo
+
+This simple single player demo showcases the card structures
+in a very simple "War" card game format. The front-end is just
+pure HTML and CSS, but as a whole it provides a base that we can
+expand upon and further develop, starting probably with the
+full game logic.
+
+To use this little demo, all you have to do is:
+
+```
+git clone https://github.com/WiktorG1542/sleazster.git
+cd sleazster
+npm install
+node server.js
+```
+
+Then visit the game in your local browser at [http://localhost:3000](http://localhost:3000).
+
 # Functionalities
 
 * Single and multi-player gameplay.
