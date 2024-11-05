@@ -26,6 +26,17 @@ function initGrid() {
   });
 }
 
+// Helper function to display card value as face card name if applicable
+function getCardDisplayValue(value) {
+  switch (value) {
+    case 11: return 'J';
+    case 12: return 'Q';
+    case 13: return 'K';
+    case 14: return 'A';
+    default: return value;
+  }
+}
+
 // Reset and update the grid colors based on the deck status
 function updateGrid(currentCards = []) {
   document.querySelectorAll('.card').forEach(card => {
@@ -54,7 +65,7 @@ function createDeck() {
   let deck = [];
   for (let suit of suits) {
     for (let value of values) {
-      deck.push({ suit, value });
+      deck.push({ suit, value: getCardDisplayValue(value) }); // Use display value directly
     }
   }
   return deck.sort(() => Math.random() - 0.5); // Shuffle deck
@@ -74,14 +85,17 @@ function playRound() {
   updateGrid([playerCard, computerCard]);
 
   let roundResult = '';
+  const playerCardDisplay = `${getCardDisplayValue(playerCard.value)}${playerCard.suit}`;
+  const computerCardDisplay = `${getCardDisplayValue(computerCard.value)}${computerCard.suit}`;
+
   if (playerCard.value > computerCard.value) {
     playerScore++;
-    roundResult = `You win this round! You drew ${playerCard.value}${playerCard.suit} and the computer drew ${computerCard.value}${computerCard.suit}.`;
+    roundResult = `You win this round! You drew ${playerCardDisplay} and the computer drew ${computerCardDisplay}.`;
   } else if (computerCard.value > playerCard.value) {
     computerScore++;
-    roundResult = `Computer wins this round! You drew ${playerCard.value}${playerCard.suit} and the computer drew ${computerCard.value}${computerCard.suit}.`;
+    roundResult = `Computer wins this round! You drew ${playerCardDisplay} and the computer drew ${computerCardDisplay}.`;
   } else {
-    roundResult = `It's a tie! Both drew ${playerCard.value}${playerCard.suit}.`;
+    roundResult = `It's a tie! Both drew ${playerCardDisplay}.`;
   }
 
   document.getElementById('status').innerText = roundResult;
