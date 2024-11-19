@@ -24,6 +24,8 @@ You can visit the game from other devices connected to the same network by chang
 * also make the icons of the hands be "1A" instead of "Single A"
 * cards not getting smaller as the game progresses and you have more
 * the player that loses should start the next round
+* after a game is over, the players dont reconnect - instead the
+next game starts automatically, and a score of won games is kept
 
 # Functionalities
 
