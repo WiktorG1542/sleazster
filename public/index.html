@@ -2,23 +2,42 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>War Card Game</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="game">
-    <h1>War Card Game</h1>
-    
-    <!-- Card grid for visualizing deck status -->
-    <div id="cardGrid"></div>
-    
-    <div id="status">Click "Play Round" to start the game</div>
-    <button id="playRound">Play Round</button>
-    <button id="resetGame" style="display:none;">Play Again</button>
-    <div id="playerScore">Your Score: 0</div>
-    <div id="computerScore">Computer Score: 0</div>
+  <h1>War Card Game</h1>
+
+  <!-- Nickname input and join button -->
+  <div id="nicknameContainer">
+    <input type="text" id="nickname" placeholder="Enter your nickname" />
+    <button id="joinGame">Join Game</button>
   </div>
+
+  <!-- Game container (hidden until player joins) -->
+  <div id="gameContainer" style="display: none;">
+    <!-- Player list (Moved outside of the lobby div) -->
+    <div id="playerList"></div>
+
+    <!-- Waiting lobby -->
+    <div id="lobby">
+      <h2>Waiting Lobby</h2>
+      <button id="startGame">Start Game</button>
+    </div>
+
+    <!-- Game area (hidden until game starts) -->
+    <div id="gameArea" style="display: none;">
+      <!-- Card grid for visualizing deck status -->
+      <div id="cardGrid"></div>
+
+      <div id="status">Waiting for players...</div>
+      <button id="playRound" style="display: none;">Play Round</button>
+      <button id="resetGame" style="display: none;">Reset Game</button>
+    </div>
+  </div>
+
+  <!-- Include Socket.io script -->
+  <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

@@ -16,6 +16,7 @@ node server.js
 ```
 
 Then visit the game in your local browser at [http://localhost:3000](http://localhost:3000).
+You can visit the game from other devices connected to the same network by changing localhost to the ip adress of the host
 
 # Functionalities
 
