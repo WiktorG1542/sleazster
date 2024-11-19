@@ -21,6 +21,7 @@ You can visit the game from other devices connected to the same network by chang
 ## things to add
 
 * all of the hands
+* also make the icons of the hands be "1A" instead of "Single A"
 * cards not getting smaller as the game progresses and you have more
 * the player that loses should start the next round
 
