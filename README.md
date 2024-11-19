@@ -18,6 +18,12 @@ node server.js
 Then visit the game in your local browser at [http://localhost:3000](http://localhost:3000).
 You can visit the game from other devices connected to the same network by changing localhost to the ip adress of the host
 
+## things to add
+
+* all of the hands
+* cards not getting smaller as the game progresses and you have more
+* the player that loses should start the next round
+
 # Functionalities
 
 * Single and multi-player gameplay.
