@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>War Card Game</title>
+  <title>Poker Probability Game</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>War Card Game</h1>
+  <h1>Poker Probability Game</h1>
 
   <!-- Nickname input and join button -->
   <div id="nicknameContainer">
@@ -16,23 +16,40 @@
 
   <!-- Game container (hidden until player joins) -->
   <div id="gameContainer" style="display: none;">
-    <!-- Player list (Moved outside of the lobby div) -->
-    <div id="playerList"></div>
-
-    <!-- Waiting lobby -->
-    <div id="lobby">
-      <h2>Waiting Lobby</h2>
-      <button id="startGame">Start Game</button>
+    <!-- Player info -->
+    <div id="playerInfo">
+      <div id="player1">
+        <h2 id="player1Name"></h2>
+        <div id="player1Score"></div>
+        <div id="player1Cards" class="cardContainer"></div>
+      </div>
+      <div id="player2">
+        <h2 id="player2Name"></h2>
+        <div id="player2Score"></div>
+        <div id="player2Cards" class="cardContainer"></div>
+      </div>
     </div>
 
-    <!-- Game area (hidden until game starts) -->
-    <div id="gameArea" style="display: none;">
-      <!-- Card grid for visualizing deck status -->
-      <div id="cardGrid"></div>
+    <!-- Action buttons -->
+    <div id="actionButtons" style="display: none;">
+      <button id="checkButton">Check</button>
+      <button id="trumpButton">Trump</button>
+    </div>
 
-      <div id="status">Waiting for players...</div>
-      <button id="playRound" style="display: none;">Play Round</button>
-      <button id="resetGame" style="display: none;">Reset Game</button>
+    <!-- Hand selection grid (hidden until trump is chosen) -->
+    <div id="handSelection" style="display: none;">
+      <h3>Select a Hand to Trump</h3>
+      <div id="handGrid">
+        <!-- Rows will be generated dynamically -->
+      </div>
+    </div>
+
+    <!-- Status message -->
+    <div id="statusMessage"></div>
+
+    <!-- Proceed button (after round ends) -->
+    <div id="proceedContainer" style="display: none;">
+      <button id="proceedButton">Proceed to Next Round</button>
     </div>
   </div>
 

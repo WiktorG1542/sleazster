@@ -2,14 +2,13 @@
 const socket = io();
 
 let nickname = '';
-let players = {};
-let availableCards = new Set();
+let gameState = null;
 
 // Event listeners for UI elements
 document.getElementById('joinGame').addEventListener('click', joinGame);
-document.getElementById('startGame').addEventListener('click', startGame);
-document.getElementById('playRound').addEventListener('click', playRound);
-document.getElementById('resetGame').addEventListener('click', resetGame);
+document.getElementById('checkButton').addEventListener('click', checkMove);
+document.getElementById('trumpButton').addEventListener('click', trumpMove);
+document.getElementById('proceedButton').addEventListener('click', proceedNextRound);
 
 // Join the game with a nickname
 function joinGame() {
@@ -24,142 +23,180 @@ function joinGame() {
   }
 }
 
-// Start the game
-function startGame() {
-  socket.emit('startGame');
-}
+// Handle 'startGame' event from server
+socket.on('startGame', (data) => {
+  gameState = data;
+  updateUI();
+});
 
-// Play a round
-function playRound() {
-  socket.emit('playRound');
-}
+// Update game state
+socket.on('updateGameState', (data) => {
+  gameState = data;
+  updateUI();
+});
 
-// Reset the game
-function resetGame() {
-  socket.emit('resetGame');
-}
+// Update UI based on game state
+function updateUI() {
+  if (!gameState) return;
 
-// Initialize the card grid
-function initGrid() {
-  const cardGrid = document.getElementById('cardGrid');
-  cardGrid.innerHTML = '';
-  const suits = ['♠', '♣', '♦', '♥'];
-  const values = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A'];
+  // Update player info
+  const player1Name = document.getElementById('player1Name');
+  const player1Score = document.getElementById('player1Score');
+  const player1Cards = document.getElementById('player1Cards');
 
-  suits.forEach((suit) => {
-    values.forEach((value) => {
-      const cardDiv = document.createElement('div');
-      cardDiv.classList.add('card');
-      cardDiv.id = `${value}${suit}`;
-      cardDiv.innerText = `${value}${suit}`;
-      cardGrid.appendChild(cardDiv);
-    });
-  });
-}
+  const player2Name = document.getElementById('player2Name');
+  const player2Score = document.getElementById('player2Score');
+  const player2Cards = document.getElementById('player2Cards');
 
-// Update the card grid based on available cards
-function updateGrid(currentCards = []) {
-  document.querySelectorAll('.card').forEach((card) => {
-    const cardId = card.id;
-    if (!availableCards.has(cardId)) {
-      card.classList.add('picked');
-      card.classList.remove('current');
+  player1Name.innerText = gameState.player1.nickname;
+  player1Score.innerText = `Cards: ${gameState.player1.cardCount}`;
+  player1Cards.innerHTML = generateCardHTML(
+    gameState.player1.cards,
+    gameState.revealCards,
+    gameState.player1.nickname === nickname // Determine if this is the current user
+  );
+
+  player2Name.innerText = gameState.player2.nickname;
+  player2Score.innerText = `Cards: ${gameState.player2.cardCount}`;
+  player2Cards.innerHTML = generateCardHTML(
+    gameState.player2.cards,
+    gameState.revealCards,
+    gameState.player2.nickname === nickname // Determine if this is the current user
+  );
+
+  // Update action buttons
+  const actionButtons = document.getElementById('actionButtons');
+  const checkButton = document.getElementById('checkButton');
+  const trumpButton = document.getElementById('trumpButton');
+
+  if (gameState.currentPlayer === nickname && !gameState.roundEnded) {
+    actionButtons.style.display = 'block';
+
+    if (gameState.currentHand === null) {
+      // Disable the "CHECK" button at the start of the round
+      checkButton.disabled = true;
+      checkButton.classList.add('disabled');
     } else {
-      card.classList.remove('picked');
+      checkButton.disabled = false;
+      checkButton.classList.remove('disabled');
     }
-    card.classList.remove('current');
-  });
-
-  // Highlight current cards
-  currentCards.forEach((card) => {
-    const cardDiv = document.getElementById(`${card.value}${card.suit}`);
-    if (cardDiv) {
-      cardDiv.classList.add('current');
-    }
-  });
-}
-
-// Update the player list UI
-function updatePlayerList() {
-  const playerListDiv = document.getElementById('playerList');
-  playerListDiv.innerHTML = '<h2>Players:</h2>';
-  for (let playerId in players) {
-    const player = players[playerId];
-    const playerDiv = document.createElement('div');
-    playerDiv.innerText = `${player.nickname}: ${player.score}`;
-    playerListDiv.appendChild(playerDiv);
-  }
-}
-
-// Socket.io event handlers
-
-// Update players when a new player joins or someone disconnects
-socket.on('updatePlayers', (updatedPlayers) => {
-  players = updatedPlayers;
-  updatePlayerList();
-});
-
-// Game started
-socket.on('gameStarted', () => {
-  // Hide lobby, show game area
-  document.getElementById('lobby').style.display = 'none';
-  document.getElementById('gameArea').style.display = 'block';
-
-  initGrid();
-  availableCards = new Set([...document.querySelectorAll('.card')].map((card) => card.id));
-  document.getElementById('status').innerText = 'Game has started!';
-  document.getElementById('playRound').style.display = 'inline';
-});
-
-// Round result
-socket.on('roundResult', (data) => {
-  players = data.players;
-  availableCards = new Set(data.availableCards);
-  updatePlayerList();
-
-  const currentCards = Object.values(data.drawnCards);
-  updateGrid(currentCards);
-
-  let roundStatus = 'Round results:\n';
-  for (let playerId in data.drawnCards) {
-    const card = data.drawnCards[playerId];
-    roundStatus += `${players[playerId].nickname} drew ${card.value}${card.suit}\n`;
-  }
-
-  // Display round winner(s)
-  if (data.roundWinners.length === 1) {
-    roundStatus += `Winner: ${players[data.roundWinners[0]].nickname}`;
   } else {
-    roundStatus += `It's a tie between: ${data.roundWinners.map(id => players[id].nickname).join(', ')}`;
+    actionButtons.style.display = 'none';
   }
 
-  document.getElementById('status').innerText = roundStatus;
-});
+  // Update status message
+  const statusMessage = document.getElementById('statusMessage');
+  statusMessage.innerText = gameState.statusMessage;
 
-// Game over
-socket.on('gameOver', (data) => {
-  players = data.players;
-  updatePlayerList();
+  // Update proceed button
+  const proceedContainer = document.getElementById('proceedContainer');
+  const proceedButton = document.getElementById('proceedButton');
+  if (gameState.roundEnded) {
+    proceedContainer.style.display = 'block';
+    if (gameState.playersReady[nickname]) {
+      proceedButton.disabled = true;
+      proceedButton.classList.add('disabled');
+    } else {
+      proceedButton.disabled = false;
+      proceedButton.classList.remove('disabled');
+    }
+  } else {
+    proceedContainer.style.display = 'none';
+  }
 
-  let finalMessage = `Game Over! Winner(s): ${data.winners.join(', ')}`;
-  document.getElementById('status').innerText = finalMessage;
-  document.getElementById('playRound').style.display = 'none';
-  document.getElementById('resetGame').style.display = 'inline';
-});
+  // Update hand selection grid
+  const handSelection = document.getElementById('handSelection');
+  if (gameState.selectingHand && gameState.currentPlayer === nickname) {
+    handSelection.style.display = 'block';
+    generateHandGrid();
+  } else {
+    handSelection.style.display = 'none';
+  }
+}
 
-// Game reset
-socket.on('gameReset', (updatedPlayers) => {
-  // Update players with reset scores
-  players = updatedPlayers;
-  updatePlayerList();
-  document.getElementById('lobby').style.display = 'block';
-  document.getElementById('gameArea').style.display = 'none';
-  document.getElementById('playRound').style.display = 'none';
-  document.getElementById('resetGame').style.display = 'none';
-  document.getElementById('status').innerText = 'Waiting for players...';
-});
+// Generate HTML for player's cards
+function generateCardHTML(cards, revealCards, isPlayer = false) {
+  let html = '';
+  if (revealCards || isPlayer) {
+    cards.forEach(card => {
+      html += `<div class="card">${card.value}${card.suit}</div>`;
+    });
+  } else {
+    cards.forEach(card => {
+      html += `<div class="card back">#</div>`;
+    });
+  }
+  return html;
+}
 
-// Error handling
+// Handle Check move
+function checkMove() {
+  socket.emit('playerMove', { move: 'check' });
+}
+
+// Handle Trump move
+function trumpMove() {
+  socket.emit('playerMove', { move: 'trump' });
+}
+
+// Proceed to next round
+function proceedNextRound() {
+  socket.emit('proceedNextRound');
+  // Disable the button after clicking
+  const proceedButton = document.getElementById('proceedButton');
+  proceedButton.disabled = true;
+  proceedButton.classList.add('disabled');
+}
+
+// Generate hand selection grid
+function generateHandGrid() {
+  const handGrid = document.getElementById('handGrid');
+  handGrid.innerHTML = '';
+
+  const handRanks = gameState.handRanks;
+  const currentHandIndex = gameState.currentHand ? handRanks.indexOf(gameState.currentHand) : -1;
+
+  const handCategories = ['Singles', 'Doubles', 'Streets', 'Triples'];
+  handCategories.forEach((category) => {
+    const row = document.createElement('div');
+    row.className = 'handRow';
+
+    const rowTitle = document.createElement('div');
+    rowTitle.className = 'rowTitle';
+    rowTitle.innerText = category;
+    row.appendChild(rowTitle);
+
+    const handsInCategory = gameState.hands[category];
+    handsInCategory.forEach((hand) => {
+      const handButton = document.createElement('button');
+      handButton.className = 'handButton';
+      handButton.innerText = hand;
+
+      const handIndex = handRanks.indexOf(hand);
+      if (handIndex <= currentHandIndex) {
+        handButton.disabled = true;
+        handButton.classList.add('disabled');
+      } else {
+        handButton.addEventListener('click', () => {
+          socket.emit('playerMove', { move: 'trump', selectedHand: hand });
+        });
+      }
+
+      row.appendChild(handButton);
+    });
+
+    handGrid.appendChild(row);
+  });
+}
+
+// Handle error messages from server
 socket.on('errorMessage', (message) => {
   alert(message);
+});
+
+// Handle game over
+socket.on('gameOver', (data) => {
+  alert(`Game Over! Winner: ${data.winner}`);
+  // Reset the game
+  location.reload();
 });
