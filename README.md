@@ -29,6 +29,7 @@ next game starts automatically, and a score of won games is kept
 
 # Functionalities
 
+* skibidi🚽
 * Single and multi-player gameplay.
 * Ability to play against AI opponents.
 * Modifications of the gameplay flow that players can choose  
