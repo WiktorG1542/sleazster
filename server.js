@@ -157,13 +157,14 @@ io.on('connection', (socket) => {
       // Deal new cards
       gameState.player1.cards = dealCards(gameState.player1.cardCount);
       gameState.player2.cards = dealCards(gameState.player2.cardCount);
-      // Swap starting player
-      gameState.currentPlayer = (gameState.currentPlayer === gameState.player1.nickname) ? gameState.player2.nickname : gameState.player1.nickname;
+      // Set the losing player as the starting player
+      gameState.currentPlayer = gameState.lastRoundLoser;
       gameState.currentHand = null;
       gameState.statusMessage = `${gameState.currentPlayer}'s turn.`;
       io.emit('updateGameState', gameState);
     }
   });
+  
 
   // Handle disconnections
   socket.on('disconnect', () => {
@@ -177,7 +178,6 @@ io.on('connection', (socket) => {
 });
 
 function handleCheckMove(socket) {
-  
   if (gameState.currentHand === null) {
     // No hand to check, send error message
     socket.emit('errorMessage', 'Cannot check before any hand is declared.');
@@ -195,11 +195,13 @@ function handleCheckMove(socket) {
   if (handPossible) {
     // The hand exists, player who called check loses
     incrementCardCount(gameState.currentPlayer);
+    gameState.lastRoundLoser = gameState.currentPlayer; // Track the loser
     gameState.statusMessage = `${gameState.currentPlayer} checked and the hand was there. ${gameState.currentPlayer} loses the round.`;
   } else {
     // The hand does not exist, the other player loses
     const otherPlayer = getOtherPlayer(gameState.currentPlayer);
     incrementCardCount(otherPlayer.nickname);
+    gameState.lastRoundLoser = otherPlayer.nickname; // Track the loser
     gameState.statusMessage = `${gameState.currentPlayer} checked and the hand was not there. ${otherPlayer.nickname} loses the round.`;
   }
 
