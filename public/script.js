@@ -293,6 +293,128 @@ function updateUI() {
   }
 }
 
+// 1) HELPER FUNCTION: Create a mini rank image element
+function createRankImage(rank) {
+  const img = document.createElement('img');
+  img.src = `/img/cards_small/${rank}_small.png`;
+  img.className = 'miniCard';
+  img.style.width = '30px';
+  img.style.margin = '2px';
+  return img;
+}
+
+// 2) HELPER FUNCTION: Fill a button with the mini card sprites for the given hand
+function populateHandButton(handBtn, hand) {
+  // Clear any existing text
+  handBtn.innerHTML = '';
+
+  if (hand.startsWith('Single')) {
+    // Single X => 1 card
+    const rank = hand.split(' ')[1];  // e.g. "9"
+    handBtn.appendChild(createRankImage(rank));
+
+  } else if (hand.startsWith('Double')) {
+    // Double X => 2 cards
+    const rank = hand.split(' ')[1];
+    for (let i = 0; i < 2; i++) {
+      handBtn.appendChild(createRankImage(rank));
+    }
+
+  } else if (hand.startsWith('Triple')) {
+    // Triple X => 3 cards
+    const rank = hand.split(' ')[1];
+    for (let i = 0; i < 3; i++) {
+      handBtn.appendChild(createRankImage(rank));
+    }
+
+  } else if (hand.startsWith('Quadruple')) {
+    // Quadruple X => 4 cards
+    const rank = hand.split(' ')[1];
+    for (let i = 0; i < 4; i++) {
+      handBtn.appendChild(createRankImage(rank));
+    }
+
+  } else if (hand.startsWith('2 Pairs')) {
+    // 2 Pairs X-Y => 2 of X, 2 of Y
+    // e.g. "2 Pairs 9-10" => rank1 = '9', rank2 = '10'
+    const pairString = hand.split(' ')[2]; // e.g. "9-10"
+    const [rank1, rank2] = pairString.split('-');
+    for (let i = 0; i < 2; i++) {
+      handBtn.appendChild(createRankImage(rank1));
+    }
+    for (let i = 0; i < 2; i++) {
+      handBtn.appendChild(createRankImage(rank2));
+    }
+
+  } else if (hand.startsWith('Full House')) {
+    // Full House X => triple of X + any double
+    // If your naming is "Full House 9", we only know the triple rank (9).
+    // We can only partially represent that. For a nice example:
+    const rank = hand.split(' ')[2]; // e.g. '9'
+    // Show 3 rank X + 2 rank Y if you know Y, else use a placeholder:
+    for (let i = 0; i < 3; i++) {
+      handBtn.appendChild(createRankImage(rank));
+    }
+    // Possibly append 2 placeholders or question marks?
+    // handBtn.appendChild(createRankImage('QMark'));
+    // Or if your naming scheme passes both triple + double rank in the hand name, parse that.
+
+  } else if (hand === 'Small Street') {
+    // 9, 10, J, Q, K
+    ['9', '10', 'J', 'Q', 'K'].forEach(r => {
+      handBtn.appendChild(createRankImage(r));
+    });
+
+  } else if (hand === 'Big Street') {
+    // 10, J, Q, K, A
+    ['10', 'J', 'Q', 'K', 'A'].forEach(r => {
+      handBtn.appendChild(createRankImage(r));
+    });
+  }
+  else {
+    // If unrecognized, just show the hand text or a fallback
+    populateHandButton(handBtn, hand);
+  }
+}
+
+// 3) The code in your openHandModal() or wherever you build the hand buttons
+function openHandModal(category) {
+  const modal = document.getElementById('handModal');
+  const modalHandOptions = document.getElementById('modalHandOptions');
+  modalHandOptions.innerHTML = '';
+
+  const possibleHands = gameState.hands[category];
+  const currentHandIndex = gameState.currentHand 
+    ? gameState.handRanks.indexOf(gameState.currentHand) 
+    : -1;
+
+  possibleHands.forEach(hand => {
+    const handBtn = document.createElement('button');
+    handBtn.className = 'handOption';
+
+    // Instead of text label, fill button with mini rank images:
+    populateHandButton(handBtn, hand);
+
+    // If not strong enough to beat the current hand, disable the button
+    if (gameState.handRanks.indexOf(hand) <= currentHandIndex) {
+      handBtn.disabled = true;
+      handBtn.classList.add('disabled');
+    }
+
+    handBtn.addEventListener('click', () => {
+      socket.emit('playerMove', { 
+        lobbyName: currentLobbyName, 
+        move: 'trump', 
+        selectedHand: hand 
+      });
+      closeHandModal();
+    });
+
+    modalHandOptions.appendChild(handBtn);
+  });
+
+  modal.style.display = 'block';
+}
 
 function generateCategoryGrid() {
   const categoryGrid = document.getElementById('categoryGrid');
@@ -327,7 +449,7 @@ function openHandModal(category) {
 
     const handBtn = document.createElement('button');
     handBtn.className = 'handOption';
-    handBtn.textContent = hand;
+    populateHandButton(handBtn, hand);
 
     if (handIndex <= currentHandIndex) {
       handBtn.disabled = true;

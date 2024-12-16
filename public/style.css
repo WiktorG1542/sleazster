@@ -370,6 +370,13 @@ button.disabled, button:disabled {
   padding: 8px;
 }
 
+.miniCard {
+  display: inline-block;
+  width: 30px;    /* or however small you want them */
+  margin: 0 2px;
+  vertical-align: middle;
+}
+
 #categoryGrid {
   display: flex;
   flex-wrap: wrap;
