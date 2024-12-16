@@ -125,9 +125,12 @@ function broadcastLobbies() {
   let allLobbies = [];
   for (let lobbyName in lobbies) {
     const lobby = lobbies[lobbyName];
+    // Retrieve the leader’s stored nickname
+    const leaderNickname = lobby.players[lobby.leaderId]?.nickname || 'Unknown';
+
     allLobbies.push({
       lobbyName,
-      leaderId: lobby.leaderId,
+      leaderNickname,
       inGame: lobby.inGame,
       players: Object.values(lobby.players).map(p => ({ id: p.id, nickname: p.nickname }))
     });

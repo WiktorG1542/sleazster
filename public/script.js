@@ -116,10 +116,14 @@ proceedButton.addEventListener('click', () => {
 socket.on('lobbyListUpdate', (allLobbies) => {
   lobbyListDiv.innerHTML = '';
   allLobbies.forEach((lobby) => {
-    let item = document.createElement('div');
     const isInGame = lobby.inGame ? '(In Game)' : '(Waiting)';
-    item.innerHTML = `<strong>${lobby.lobbyName}</strong> ${isInGame} - Leader: ${lobby.leaderId}<br>
-                      Players: ${lobby.players.map(p => p.nickname).join(', ')}`;
+    let item = document.createElement('div');
+    // Currently might say: "Leader: lobby.leaderId"
+    // Instead use leaderNickname:
+    item.innerHTML = `Lobby: ${lobby.lobbyName} ${isInGame} 
+      - Leader: ${lobby.leaderNickname}<br>
+      Players: ${lobby.players.map(p => p.nickname).join(', ')}`;
+
     lobbyListDiv.appendChild(item);
     lobbyListDiv.appendChild(document.createElement('hr'));
   });
@@ -179,13 +183,15 @@ socket.on('gameOver', (data) => {
 function updateUI() {
   if (!gameState) return;
 
+  // Clear the players container
   playersContainer.innerHTML = '';
 
+  // Render each player panel
   gameState.players.forEach((pl, index) => {
     const playerDiv = document.createElement('div');
     playerDiv.className = 'playerDiv';
 
-    // Player Name
+    // Player Nickname
     const playerName = document.createElement('h2');
     playerName.innerText = pl.nickname;
     playerDiv.appendChild(playerName);
@@ -196,49 +202,44 @@ function updateUI() {
     playerScore.innerText = `Cards: ${pl.cardCount}`;
     playerDiv.appendChild(playerScore);
 
-    // Cards container
+    // Card container
     const cardContainer = document.createElement('div');
     cardContainer.className = 'cardContainer';
 
+    // If revealCards=true OR this is the local player's hand, show card face; else show back
     let reveal = (gameState.revealCards || pl.nickname === nickname);
 
     pl.cards.forEach((card) => {
-      // Use a <div> for the card, or an <img> referencing the sprite
       const cardDiv = document.createElement('div');
       cardDiv.className = 'card';
 
       if (reveal) {
-        // e.g. card.value = '9', card.suit = '♠'
-        // We'll map these to something like 9S.png (9 of spades)
-        // But your suits are stored in textual form; we can do a quick mapping:
-        let suitChar = card.suit;
+        // Map suits to file names, e.g. ♠ => 'S', 9♠ => 9S.png
         let suitKey = '';
-        switch(suitChar) {
+        switch(card.suit) {
           case '♣': suitKey = 'C'; break;
           case '♦': suitKey = 'D'; break;
           case '♥': suitKey = 'H'; break;
           case '♠': suitKey = 'S'; break;
         }
-
-        // e.g. "9S.png", "10C.png" ...
-        const spriteFilename = `${card.value}${suitKey}.png`; 
+        const spriteFilename = `${card.value}${suitKey}.png`;
         const cardImg = document.createElement('img');
         cardImg.src = `/img/cards/${spriteFilename}`;
         cardImg.className = 'cardFace';
         cardDiv.appendChild(cardImg);
 
-        // Add a flipping class if we are in reveal mode
+        // Optionally add a flip animation if round ended:
         if (gameState.roundEnded) {
           cardDiv.classList.add('flip');
         }
-
       } else {
-        // Back of card sprite
+        // Show back of card
         const cardBackImg = document.createElement('img');
-        cardBackImg.src = `/img/cards/back.png`; 
+        cardBackImg.src = `/img/cards/back.png`;
         cardBackImg.className = 'cardBack';
         cardDiv.appendChild(cardBackImg);
       }
+
       cardContainer.appendChild(cardDiv);
     });
 
@@ -246,11 +247,12 @@ function updateUI() {
     playersContainer.appendChild(playerDiv);
   });
 
-  // Current player controls
+  // Current Player Controls: Check/Trump
   if (!gameState.roundEnded) {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     if (currentPlayer.nickname === nickname) {
       actionButtons.style.display = 'block';
+      // If no currentHand declared yet, disable check
       if (gameState.currentHand === null) {
         checkButton.disabled = true;
         checkButton.classList.add('disabled');
@@ -265,10 +267,10 @@ function updateUI() {
     actionButtons.style.display = 'none';
   }
 
-  // Status message
+  // Status Message
   statusMessageDiv.innerText = gameState.statusMessage;
 
-  // Proceed next round
+  // Proceed Next Round
   if (gameState.roundEnded) {
     proceedContainer.style.display = 'block';
     if (gameState.playersReady[nickname]) {
@@ -282,14 +284,82 @@ function updateUI() {
     proceedContainer.style.display = 'none';
   }
 
-  // Hand selection grid
+  // === HAND SELECTION (Category Grid + Modal) ===
   if (gameState.selectingHand && gameState.players[gameState.currentPlayerIndex].nickname === nickname) {
     handSelection.style.display = 'block';
-    generateHandGrid();
+    generateCategoryGrid();  // Show category tiles
   } else {
     handSelection.style.display = 'none';
   }
 }
+
+
+function generateCategoryGrid() {
+  const categoryGrid = document.getElementById('categoryGrid');
+  categoryGrid.innerHTML = '';
+
+  const categories = Object.keys(gameState.hands); 
+  categories.forEach((category) => {
+    const categoryDiv = document.createElement('div');
+    categoryDiv.className = 'categoryTile';
+    categoryDiv.innerText = category;
+    categoryDiv.addEventListener('click', () => {
+      openHandModal(category);
+    });
+    categoryGrid.appendChild(categoryDiv);
+  });
+}
+
+function openHandModal(category) {
+  const modal = document.getElementById('handModal');
+  const modalCategoryTitle = document.getElementById('modalCategoryTitle');
+  const modalHandOptions = document.getElementById('modalHandOptions');
+
+  modalCategoryTitle.textContent = category;  // e.g. "Singles"
+  modalHandOptions.innerHTML = '';           // Clear old hands
+
+  const possibleHands = gameState.hands[category]; 
+  const currentHandIndex = gameState.currentHand ? gameState.handRanks.indexOf(gameState.currentHand) : -1;
+
+  // For each hand in this category, create a button
+  possibleHands.forEach(hand => {
+    const handIndex = gameState.handRanks.indexOf(hand);
+
+    const handBtn = document.createElement('button');
+    handBtn.className = 'handOption';
+    handBtn.textContent = hand;
+
+    if (handIndex <= currentHandIndex) {
+      handBtn.disabled = true;
+      handBtn.classList.add('disabled');
+    }
+
+    handBtn.addEventListener('click', () => {
+      // Emit the player move with the selected hand
+      socket.emit('playerMove', { lobbyName: currentLobbyName, move: 'trump', selectedHand: hand });
+      closeHandModal();
+    });
+    
+    modalHandOptions.appendChild(handBtn);
+  });
+
+  modal.style.display = 'block';
+}
+
+function closeHandModal() {
+  document.getElementById('handModal').style.display = 'none';
+}
+
+// Close button (X)
+document.getElementById('closeModal').addEventListener('click', closeHandModal);
+
+// Also close if user clicks outside the .modal-content
+window.addEventListener('click', (event) => {
+  const modal = document.getElementById('handModal');
+  if (event.target === modal) {
+    closeHandModal();
+  }
+});
 
 function generateHandGrid() {
   handGrid.innerHTML = '';

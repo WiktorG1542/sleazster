@@ -80,7 +80,18 @@
 
     <div id="handSelection" style="display: none; margin-top: 20px;">
       <h3>Select a Hand to Trump</h3>
-      <div id="handGrid"></div>
+      
+      <!-- Category Grid: each category is a tile -->
+      <div id="categoryGrid"></div>
+    
+      <!-- Modal for hands in the chosen category -->
+      <div id="handModal" class="modal">
+        <div class="modal-content">
+          <span id="closeModal" class="close">&times;</span>
+          <h3 id="modalCategoryTitle">Hands</h3>
+          <div id="modalHandOptions" class="modal-hand-options"></div>
+        </div>
+      </div>
     </div>
 
     <div id="statusMessage" style="text-align: center; margin-top: 20px;"></div>
