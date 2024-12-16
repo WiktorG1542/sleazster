@@ -2,30 +2,164 @@
 const socket = io();
 
 let nickname = '';
+let currentLobbyName = null;
+let isLobbyLeader = false;
 let gameState = null;
 
-// Event listeners for UI elements
-document.getElementById('joinGame').addEventListener('click', joinGame);
-document.getElementById('checkButton').addEventListener('click', checkMove);
-document.getElementById('trumpButton').addEventListener('click', trumpMove);
-document.getElementById('proceedButton').addEventListener('click', proceedNextRound);
+// DOM Elements
+const mainMenuContainer = document.getElementById('mainMenuContainer');
+const howToPlayContainer = document.getElementById('howToPlayContainer');
+const howToPlayBackButton = document.getElementById('howToPlayBackButton');
+const mainMenuLobbiesButton = document.getElementById('mainMenuLobbiesButton');
+const mainMenuHowToPlayButton = document.getElementById('mainMenuHowToPlayButton');
 
-// Join the game with a nickname
-function joinGame() {
-  const nicknameInput = document.getElementById('nickname');
+const nicknameContainer = document.getElementById('nicknameContainer');
+const nicknameInput = document.getElementById('nickname');
+const enterLobbyMenuButton = document.getElementById('enterLobbyMenu');
+
+const lobbyListContainer = document.getElementById('lobbyListContainer');
+const lobbyListDiv = document.getElementById('lobbyList');
+const createLobbyNameInput = document.getElementById('createLobbyName');
+const createLobbyButton = document.getElementById('createLobby');
+const joinLobbyNameInput = document.getElementById('joinLobbyName');
+const joinLobbyButton = document.getElementById('joinLobby');
+
+const waitingRoomContainer = document.getElementById('waitingRoomContainer');
+const waitingRoomInfo = document.getElementById('waitingRoomInfo');
+const startGameButton = document.getElementById('startGame');
+const exitLobbyButton = document.getElementById('exitLobby');
+
+const gameContainer = document.getElementById('gameContainer');
+const playersContainer = document.getElementById('playersContainer');
+const actionButtons = document.getElementById('actionButtons');
+const checkButton = document.getElementById('checkButton');
+const trumpButton = document.getElementById('trumpButton');
+const statusMessageDiv = document.getElementById('statusMessage');
+const proceedContainer = document.getElementById('proceedContainer');
+const proceedButton = document.getElementById('proceedButton');
+
+// ========== MAIN MENU LOGIC ==========
+mainMenuLobbiesButton.addEventListener('click', () => {
+  mainMenuContainer.style.display = 'none';
+  nicknameContainer.style.display = 'block';
+});
+
+mainMenuHowToPlayButton.addEventListener('click', () => {
+  mainMenuContainer.style.display = 'none';
+  howToPlayContainer.style.display = 'block';
+});
+
+howToPlayBackButton.addEventListener('click', () => {
+  howToPlayContainer.style.display = 'none';
+  mainMenuContainer.style.display = 'block';
+});
+
+// ========== NICKNAME + LOBBY FLOW ==========
+enterLobbyMenuButton.addEventListener('click', () => {
   nickname = nicknameInput.value.trim();
-  if (nickname) {
-    socket.emit('register', nickname);
-    document.getElementById('nicknameContainer').style.display = 'none';
-    document.getElementById('gameContainer').style.display = 'block';
-  } else {
+  if (!nickname) {
     alert('Please enter a nickname.');
+    return;
   }
-}
+  nicknameContainer.style.display = 'none';
+  lobbyListContainer.style.display = 'block';
+});
+
+createLobbyButton.addEventListener('click', () => {
+  const lobbyName = createLobbyNameInput.value.trim();
+  if (!lobbyName) {
+    alert('Please enter a lobby name.');
+    return;
+  }
+  socket.emit('createLobby', { lobbyName, nickname });
+});
+
+joinLobbyButton.addEventListener('click', () => {
+  const lobbyName = joinLobbyNameInput.value.trim();
+  if (!lobbyName) {
+    alert('Please enter a lobby name.');
+    return;
+  }
+  socket.emit('joinLobby', { lobbyName, nickname });
+});
+
+startGameButton.addEventListener('click', () => {
+  if (!currentLobbyName) return;
+  socket.emit('startLobbyGame', currentLobbyName);
+});
+
+exitLobbyButton.addEventListener('click', () => {
+  socket.emit('exitLobby');
+  waitingRoomContainer.style.display = 'none';
+  lobbyListContainer.style.display = 'block';
+});
+
+// ========== IN-GAME CONTROLS ==========
+checkButton.addEventListener('click', () => {
+  socket.emit('playerMove', { lobbyName: currentLobbyName, move: 'check' });
+});
+
+trumpButton.addEventListener('click', () => {
+  socket.emit('playerMove', { lobbyName: currentLobbyName, move: 'trump' });
+});
+
+proceedButton.addEventListener('click', () => {
+  socket.emit('proceedNextRound', currentLobbyName);
+  proceedButton.disabled = true;
+  proceedButton.classList.add('disabled');
+});
+
+// =============== SOCKET EVENTS ===============
+
+// Full list of all lobbies
+socket.on('lobbyListUpdate', (allLobbies) => {
+  // Show the list of lobbies that exist
+  lobbyListDiv.innerHTML = '';
+  allLobbies.forEach((lobby) => {
+    let item = document.createElement('div');
+    const isInGame = lobby.inGame ? '(In Game)' : '(Waiting)';
+    item.innerHTML = `Lobby: ${lobby.lobbyName} ${isInGame} - Leader: ${lobby.leaderId}<br>Players: ${lobby.players.map(p => p.nickname).join(', ')}`;
+    lobbyListDiv.appendChild(item);
+    lobbyListDiv.appendChild(document.createElement('hr'));
+  });
+});
+
+// Info for a specific lobby the user is in
+socket.on('lobbyUpdate', (data) => {
+  const { lobbyName, playerData, leaderId, inGame } = data;
+  currentLobbyName = lobbyName;
+  isLobbyLeader = (socket.id === leaderId);
+
+  if (!inGame) {
+    // Show waiting room
+    lobbyListContainer.style.display = 'none';
+    waitingRoomContainer.style.display = 'block';
+    waitingRoomInfo.innerHTML = `Lobby Name: ${lobbyName}<br>`;
+    waitingRoomInfo.innerHTML += 'Players in this lobby:<br>';
+    playerData.forEach((p) => {
+      waitingRoomInfo.innerHTML += `- ${p.nickname} ${p.id === leaderId ? '(Leader)' : ''}<br>`;
+    });
+
+    // Leader can only start if there's more than 1 player
+    if (isLobbyLeader && playerData.length > 1) {
+      startGameButton.style.display = 'inline-block';
+    } else {
+      startGameButton.style.display = 'none';
+    }
+    // Everyone can exit/leave
+    exitLobbyButton.style.display = 'inline-block';
+  } else {
+    // Hide waiting room, show game container
+    waitingRoomContainer.style.display = 'none';
+    gameContainer.style.display = 'block';
+  }
+});
 
 // Handle 'startGame' event from server
 socket.on('startGame', (data) => {
   gameState = data;
+  waitingRoomContainer.style.display = 'none';
+  gameContainer.style.display = 'block';
   updateUI();
 });
 
@@ -35,62 +169,83 @@ socket.on('updateGameState', (data) => {
   updateUI();
 });
 
-// Update UI based on game state
+// Handle error messages from server
+socket.on('errorMessage', (message) => {
+  alert(message);
+});
+
+// Handle game over
+socket.on('gameOver', (data) => {
+  alert(`Game Over! Winner: ${data.winner}`);
+  location.reload();
+});
+
+// =============== UI HELPER FUNCTIONS ===============
+
 function updateUI() {
   if (!gameState) return;
 
-  // Update player info
-  const player1Name = document.getElementById('player1Name');
-  const player1Score = document.getElementById('player1Score');
-  const player1Cards = document.getElementById('player1Cards');
+  // Clear the playersContainer
+  playersContainer.innerHTML = '';
 
-  const player2Name = document.getElementById('player2Name');
-  const player2Score = document.getElementById('player2Score');
-  const player2Cards = document.getElementById('player2Cards');
+  // Create UI for each player
+  gameState.players.forEach((pl) => {
+    const playerDiv = document.createElement('div');
+    playerDiv.className = 'playerDiv';
 
-  player1Name.innerText = gameState.player1.nickname;
-  player1Score.innerText = `Cards: ${gameState.player1.cardCount}`;
-  player1Cards.innerHTML = generateCardHTML(
-    gameState.player1.cards,
-    gameState.revealCards,
-    gameState.player1.nickname === nickname // Determine if this is the current user
-  );
+    const playerName = document.createElement('h2');
+    playerName.innerText = pl.nickname;
+    playerDiv.appendChild(playerName);
 
-  player2Name.innerText = gameState.player2.nickname;
-  player2Score.innerText = `Cards: ${gameState.player2.cardCount}`;
-  player2Cards.innerHTML = generateCardHTML(
-    gameState.player2.cards,
-    gameState.revealCards,
-    gameState.player2.nickname === nickname // Determine if this is the current user
-  );
+    const playerScore = document.createElement('div');
+    playerScore.innerText = `Cards: ${pl.cardCount}`;
+    playerDiv.appendChild(playerScore);
 
-  // Update action buttons
-  const actionButtons = document.getElementById('actionButtons');
-  const checkButton = document.getElementById('checkButton');
-  const trumpButton = document.getElementById('trumpButton');
+    const cardContainer = document.createElement('div');
+    cardContainer.className = 'cardContainer';
 
-  if (gameState.currentPlayer === nickname && !gameState.roundEnded) {
-    actionButtons.style.display = 'block';
+    // Reveal cards if gameState.revealCards == true OR if this is the local player's cards
+    let reveal = gameState.revealCards || (pl.nickname === nickname);
+    pl.cards.forEach((card) => {
+      const cardDiv = document.createElement('div');
+      if (reveal) {
+        cardDiv.className = 'card';
+        cardDiv.innerText = `${card.value}${card.suit}`;
+      } else {
+        cardDiv.className = 'card back';
+        cardDiv.innerText = '#';
+      }
+      cardContainer.appendChild(cardDiv);
+    });
+    playerDiv.appendChild(cardContainer);
 
-    if (gameState.currentHand === null) {
-      // Disable the "CHECK" button at the start of the round
-      checkButton.disabled = true;
-      checkButton.classList.add('disabled');
+    playersContainer.appendChild(playerDiv);
+  });
+
+  // Current player controls
+  if (!gameState.roundEnded) {
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    if (currentPlayer.nickname === nickname) {
+      actionButtons.style.display = 'block';
+      // If currentHand is null, disable check at start
+      if (gameState.currentHand === null) {
+        checkButton.disabled = true;
+        checkButton.classList.add('disabled');
+      } else {
+        checkButton.disabled = false;
+        checkButton.classList.remove('disabled');
+      }
     } else {
-      checkButton.disabled = false;
-      checkButton.classList.remove('disabled');
+      actionButtons.style.display = 'none';
     }
   } else {
     actionButtons.style.display = 'none';
   }
 
-  // Update status message
-  const statusMessage = document.getElementById('statusMessage');
-  statusMessage.innerText = gameState.statusMessage;
+  // Status message
+  statusMessageDiv.innerText = gameState.statusMessage;
 
-  // Update proceed button
-  const proceedContainer = document.getElementById('proceedContainer');
-  const proceedButton = document.getElementById('proceedButton');
+  // Proceed next round
   if (gameState.roundEnded) {
     proceedContainer.style.display = 'block';
     if (gameState.playersReady[nickname]) {
@@ -104,9 +259,9 @@ function updateUI() {
     proceedContainer.style.display = 'none';
   }
 
-  // Update hand selection grid
+  // Hand selection grid
   const handSelection = document.getElementById('handSelection');
-  if (gameState.selectingHand && gameState.currentPlayer === nickname) {
+  if (gameState.selectingHand && gameState.players[gameState.currentPlayerIndex].nickname === nickname) {
     handSelection.style.display = 'block';
     generateHandGrid();
   } else {
@@ -114,41 +269,6 @@ function updateUI() {
   }
 }
 
-// Generate HTML for player's cards
-function generateCardHTML(cards, revealCards, isPlayer = false) {
-  let html = '';
-  if (revealCards || isPlayer) {
-    cards.forEach(card => {
-      html += `<div class="card">${card.value}${card.suit}</div>`;
-    });
-  } else {
-    cards.forEach(card => {
-      html += `<div class="card back">#</div>`;
-    });
-  }
-  return html;
-}
-
-// Handle Check move
-function checkMove() {
-  socket.emit('playerMove', { move: 'check' });
-}
-
-// Handle Trump move
-function trumpMove() {
-  socket.emit('playerMove', { move: 'trump' });
-}
-
-// Proceed to next round
-function proceedNextRound() {
-  socket.emit('proceedNextRound');
-  // Disable the button after clicking
-  const proceedButton = document.getElementById('proceedButton');
-  proceedButton.disabled = true;
-  proceedButton.classList.add('disabled');
-}
-
-// Generate hand selection grid
 function generateHandGrid() {
   const handGrid = document.getElementById('handGrid');
   handGrid.innerHTML = '';
@@ -178,7 +298,7 @@ function generateHandGrid() {
         handButton.classList.add('disabled');
       } else {
         handButton.addEventListener('click', () => {
-          socket.emit('playerMove', { move: 'trump', selectedHand: hand });
+          socket.emit('playerMove', { lobbyName: currentLobbyName, move: 'trump', selectedHand: hand });
         });
       }
 
@@ -188,15 +308,3 @@ function generateHandGrid() {
     handGrid.appendChild(row);
   });
 }
-
-// Handle error messages from server
-socket.on('errorMessage', (message) => {
-  alert(message);
-});
-
-// Handle game over
-socket.on('gameOver', (data) => {
-  alert(`Game Over! Winner: ${data.winner}`);
-  // Reset the game
-  location.reload();
-});

@@ -2,53 +2,77 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Poker Probability Game</title>
+  <title>OBLECH - Main Menu</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Poker Probability Game</h1>
 
-  <!-- Nickname input and join button -->
-  <div id="nicknameContainer">
-    <input type="text" id="nickname" placeholder="Enter your nickname" />
-    <button id="joinGame">Join Game</button>
+  <!-- Main Menu -->
+  <div id="mainMenuContainer">
+    <h1>OBLECH</h1>
+    <button id="mainMenuLobbiesButton">LOBBIES</button>
+    <button id="mainMenuHowToPlayButton">HOW TO PLAY</button>
   </div>
 
-  <!-- Game container (hidden until player joins) -->
+  <!-- HOW TO PLAY -->
+  <div id="howToPlayContainer" style="display: none;">
+    <h2>How To Play OBLECH</h2>
+    <p>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vitae consequat lectus.
+      Nulla hendrerit metus ut diam facilisis, at egestas magna condimentum. Fusce vitae
+      nunc ipsum. Cras vel lacus urna. Quisque et feugiat risus.
+    </p>
+    <button id="howToPlayBackButton">GO BACK</button>
+  </div>
+
+  <!-- Nickname input (shown after clicking LOBBIES in main menu) -->
+  <div id="nicknameContainer" style="display: none;">
+    <input type="text" id="nickname" placeholder="Enter your nickname" />
+    <button id="enterLobbyMenu">Enter Lobby Menu</button>
+  </div>
+
+  <!-- Lobby list & creation/join container -->
+  <div id="lobbyListContainer" style="display: none;">
+    <h2>Available Lobbies</h2>
+    <div id="lobbyList" style="margin-bottom: 20px;"></div>
+    
+    <h3>Create a Lobby</h3>
+    <input type="text" id="createLobbyName" placeholder="Lobby Name" />
+    <button id="createLobby">Create Lobby</button>
+    
+    <h3>Join a Lobby</h3>
+    <input type="text" id="joinLobbyName" placeholder="Lobby Name" />
+    <button id="joinLobby">Join Lobby</button>
+  </div>
+
+  <!-- Waiting room container -->
+  <div id="waitingRoomContainer" style="display: none;">
+    <div id="waitingRoomInfo"></div>
+    <button id="startGame" style="display: none;">Start Game</button>
+    <button id="exitLobby" style="display: none;">Leave Lobby</button>
+  </div>
+
+  <!-- Game container (hidden until the game starts) -->
   <div id="gameContainer" style="display: none;">
-    <!-- Player info -->
-    <div id="playerInfo">
-      <div id="player1">
-        <h2 id="player1Name"></h2>
-        <div id="player1Score"></div>
-        <div id="player1Cards" class="cardContainer"></div>
-      </div>
-      <div id="player2">
-        <h2 id="player2Name"></h2>
-        <div id="player2Score"></div>
-        <div id="player2Cards" class="cardContainer"></div>
-      </div>
-    </div>
+    <div id="playersContainer" style="display: flex; justify-content: space-around; flex-wrap: wrap;"></div>
 
     <!-- Action buttons -->
-    <div id="actionButtons" style="display: none;">
+    <div id="actionButtons" style="text-align: center; margin-top: 20px; display: none;">
       <button id="checkButton">Check</button>
       <button id="trumpButton">Trump</button>
     </div>
 
     <!-- Hand selection grid (hidden until trump is chosen) -->
-    <div id="handSelection" style="display: none;">
+    <div id="handSelection" style="display: none; margin-top: 20px;">
       <h3>Select a Hand to Trump</h3>
-      <div id="handGrid">
-        <!-- Rows will be generated dynamically -->
-      </div>
+      <div id="handGrid"></div>
     </div>
 
     <!-- Status message -->
-    <div id="statusMessage"></div>
+    <div id="statusMessage" style="text-align: center; margin-top: 20px;"></div>
 
     <!-- Proceed button (after round ends) -->
-    <div id="proceedContainer" style="display: none;">
+    <div id="proceedContainer" style="display: none; text-align: center; margin-top: 20px;">
       <button id="proceedButton">Proceed to Next Round</button>
     </div>
   </div>

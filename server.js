@@ -6,17 +6,19 @@ const socketIO = require('socket.io');
 
 const app = express();
 const PORT = 3000;
-
-// Create an HTTP server
 const server = http.createServer(app);
-
-// Initialize Socket.io
 const io = socketIO(server);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-let players = {};
-let gameState = null;
+// Store all lobbies in memory
+// Structure: lobbies[lobbyName] = { 
+//   leaderId: socket.id,
+//   players: { socketId: { id, nickname }, ... },
+//   inGame: false,
+//   gameState: null
+// }
+let lobbies = {};
 
 // Define hands and their rankings
 const handRanks = [
@@ -34,41 +36,142 @@ const hands = {
   'Triples': ['Triple 9', 'Triple 10', 'Triple J', 'Triple Q', 'Triple K', 'Triple A']
 };
 
-// Function to start the game when two players are connected
-function startGame() {
-  const playerIds = Object.keys(players);
-  const randomIndex = Math.floor(Math.random() * playerIds.length);
-  const startingPlayerId = playerIds[randomIndex];
+// =============== LOBBY-RELATED FUNCTIONS ===============
+function createLobby(lobbyName, leaderId) {
+  if (lobbies[lobbyName]) {
+    return false; // Lobby name already exists
+  }
+  lobbies[lobbyName] = {
+    leaderId,
+    players: {},
+    inGame: false,
+    gameState: null
+  };
+  return true;
+}
 
-  gameState = {
-    player1: {
-      id: playerIds[0],
-      nickname: players[playerIds[0]].nickname,
+function joinLobby(lobbyName, socketId, nickname) {
+  const lobby = lobbies[lobbyName];
+  if (!lobby) return { success: false, message: 'Lobby does not exist.' };
+  if (lobby.inGame) {
+    return { success: false, message: 'Game has already started in this lobby.' };
+  }
+
+  lobby.players[socketId] = { id: socketId, nickname };
+  return { success: true, message: 'Joined lobby successfully.' };
+}
+
+function leaveLobby(socketId) {
+  for (let lobbyName in lobbies) {
+    const lobby = lobbies[lobbyName];
+    if (lobby.players[socketId]) {
+      // The player is in this lobby
+      delete lobby.players[socketId];
+      // If leader leaves, pick a random new leader
+      if (lobby.leaderId === socketId) {
+        const playerIds = Object.keys(lobby.players);
+        if (playerIds.length > 0) {
+          const randomIndex = Math.floor(Math.random() * playerIds.length);
+          lobby.leaderId = playerIds[randomIndex];
+        } else {
+          // If no one left, delete lobby
+          delete lobbies[lobbyName];
+          broadcastLobbies();
+          return; 
+        }
+      }
+      updateLobby(lobbyName);
+      broadcastLobbies();
+      return;
+    }
+  }
+}
+
+// Broadcast updated lobby info to everyone
+function broadcastLobbies() {
+  let allLobbies = [];
+  for (let lobbyName in lobbies) {
+    const lobby = lobbies[lobbyName];
+    allLobbies.push({
+      lobbyName,
+      leaderId: lobby.leaderId,
+      inGame: lobby.inGame,
+      players: Object.values(lobby.players).map(p => ({ id: p.id, nickname: p.nickname }))
+    });
+  }
+  io.emit('lobbyListUpdate', allLobbies);
+}
+
+// Broadcast updated lobby info to all players in a specific lobby
+function updateLobby(lobbyName) {
+  const lobby = lobbies[lobbyName];
+  if (!lobby) return;
+
+  const playerData = Object.values(lobby.players).map((p) => ({
+    id: p.id,
+    nickname: p.nickname
+  }));
+
+  io.to(lobbyName).emit('lobbyUpdate', {
+    lobbyName,
+    playerData,
+    leaderId: lobby.leaderId,
+    inGame: lobby.inGame
+  });
+}
+
+// =============== GAME-RELATED FUNCTIONS ===============
+
+// Start the game for a particular lobby
+function startGame(lobbyName) {
+  const lobby = lobbies[lobbyName];
+  if (!lobby) return;
+
+  const playerIds = Object.keys(lobby.players);
+  if (playerIds.length < 2) {
+    io.to(lobbyName).emit('errorMessage', 'Need at least 2 players to start the game.');
+    return;
+  }
+
+  // Mark lobby as in-game
+  lobby.inGame = true;
+
+  // Build an array of player states
+  let playersArr = [];
+  for (let socketId of playerIds) {
+    const pl = lobby.players[socketId];
+    playersArr.push({
+      id: pl.id,
+      nickname: pl.nickname,
       cardCount: 1,
-      cards: dealCards(1),
-    },
-    player2: {
-      id: playerIds[1],
-      nickname: players[playerIds[1]].nickname,
-      cardCount: 1,
-      cards: dealCards(1),
-    },
-    currentPlayer: players[startingPlayerId].nickname,
+      cards: dealCards(1)
+    });
+  }
+
+  // Randomly pick a starting player
+  const randomIndex = Math.floor(Math.random() * playersArr.length);
+
+  // Prepare playersReady object
+  let playersReadyObj = {};
+  playersArr.forEach((pl) => {
+    playersReadyObj[pl.nickname] = false;
+  });
+
+  lobby.gameState = {
+    players: playersArr,
+    currentPlayerIndex: randomIndex,
     currentHand: null,
     handRanks: handRanks,
     hands: hands,
-    statusMessage: `${players[startingPlayerId].nickname}'s turn.`,
+    statusMessage: `${playersArr[randomIndex].nickname}'s turn.`,
     roundEnded: false,
     revealCards: false,
     selectingHand: false,
-    playersReady: {
-      [players[playerIds[0]].nickname]: false,
-      [players[playerIds[1]].nickname]: false
-    }
+    playersReady: playersReadyObj,
+    lastRoundLoserIndex: null
   };
 
-  // Notify players that the game has started
-  io.emit('startGame', gameState);
+  io.to(lobbyName).emit('startGame', lobby.gameState);
 }
 
 // Deal a number of random cards to a player
@@ -84,172 +187,13 @@ function dealCards(count) {
   return cards;
 }
 
-// Handle client connections
-io.on('connection', (socket) => {
-  console.log(`Player connected: ${socket.id}`);
-
-  // Handle player registration
-  socket.on('register', (nickname) => {
-    if (Object.keys(players).length < 2) {
-      players[socket.id] = {
-        id: socket.id,
-        nickname: nickname
-      };
-      console.log(`Player registered: ${nickname}`);
-
-      // Start the game when two players are connected
-      if (Object.keys(players).length === 2) {
-        startGame();
-      }
-    } else {
-      socket.emit('errorMessage', 'Game is full.');
-    }
-  });
-
-  // Handle player moves
-  socket.on('playerMove', (data) => {
-    if (!gameState || gameState.roundEnded) {
-      socket.emit('errorMessage', 'Round has ended or game not started.');
-      return;
-    }
-
-    const player = players[socket.id];
-    if (player.nickname !== gameState.currentPlayer) {
-      socket.emit('errorMessage', 'Not your turn.');
-      return;
-    }
-
-    if (data.move === 'check') {
-      // Handle check move
-      handleCheckMove(socket);
-    } else if (data.move === 'trump') {
-      // Handle trump move
-      if (gameState.currentHand === null) {
-        if (data.selectedHand) {
-          handleTrumpMove(socket, data.selectedHand);
-        } else {
-          gameState.selectingHand = true;
-          io.to(socket.id).emit('updateGameState', gameState); // Send only to the current player
-        }
-      } else {
-        if (data.selectedHand) {
-          handleTrumpMove(socket, data.selectedHand);
-        } else {
-          gameState.selectingHand = true;
-          io.to(socket.id).emit('updateGameState', gameState); // Send only to the current player
-        }
-      }
-    }
-  });
-
-  // Handle proceed to next round
-  socket.on('proceedNextRound', () => {
-    const player = players[socket.id];
-    gameState.playersReady[player.nickname] = true;
-    if (Object.values(gameState.playersReady).every(ready => ready)) {
-      // Reset for next round
-      gameState.roundEnded = false;
-      gameState.revealCards = false;
-      gameState.playersReady = {
-        [gameState.player1.nickname]: false,
-        [gameState.player2.nickname]: false
-      };
-      // Deal new cards
-      gameState.player1.cards = dealCards(gameState.player1.cardCount);
-      gameState.player2.cards = dealCards(gameState.player2.cardCount);
-      // Set the losing player as the starting player
-      gameState.currentPlayer = gameState.lastRoundLoser;
-      gameState.currentHand = null;
-      gameState.statusMessage = `${gameState.currentPlayer}'s turn.`;
-      io.emit('updateGameState', gameState);
-    }
-  });
-  
-
-  // Handle disconnections
-  socket.on('disconnect', () => {
-    console.log(`Player disconnected: ${socket.id}`);
-    delete players[socket.id];
-    // End game if a player disconnects
-    io.emit('errorMessage', 'A player has disconnected. Game will reset.');
-    players = {};
-    gameState = null;
-  });
-});
-
-function handleCheckMove(socket) {
-  if (gameState.currentHand === null) {
-    // No hand to check, send error message
-    socket.emit('errorMessage', 'Cannot check before any hand is declared.');
-    return;
-  }
-
-  gameState.roundEnded = true;
-  gameState.revealCards = true;
-  const currentHandIndex = handRanks.indexOf(gameState.currentHand);
-
-  // Verify if the hand is possible with the combined cards
-  const allCards = gameState.player1.cards.concat(gameState.player2.cards);
-  const handPossible = isHandPossible(gameState.currentHand, allCards);
-
-  if (handPossible) {
-    // The hand exists, player who called check loses
-    incrementCardCount(gameState.currentPlayer);
-    gameState.lastRoundLoser = gameState.currentPlayer; // Track the loser
-    gameState.statusMessage = `${gameState.currentPlayer} checked and the hand was there. ${gameState.currentPlayer} loses the round.`;
-  } else {
-    // The hand does not exist, the other player loses
-    const otherPlayer = getOtherPlayer(gameState.currentPlayer);
-    incrementCardCount(otherPlayer.nickname);
-    gameState.lastRoundLoser = otherPlayer.nickname; // Track the loser
-    gameState.statusMessage = `${gameState.currentPlayer} checked and the hand was not there. ${otherPlayer.nickname} loses the round.`;
-  }
-
-  // Check for game over
-  if (gameState.player1.cardCount >= 6 || gameState.player2.cardCount >= 6) {
-    const winner = gameState.player1.cardCount >= 6 ? gameState.player2.nickname : gameState.player1.nickname;
-    io.emit('gameOver', { winner: winner });
-    gameState = null;
-  } else {
-    io.emit('updateGameState', gameState);
-  }
+// Returns the index of the next player's turn
+function getNextPlayerIndex(gameState, currentIndex) {
+  let nextIndex = (currentIndex + 1) % gameState.players.length;
+  return nextIndex;
 }
 
-function handleTrumpMove(socket, selectedHand) {
-  const currentHandIndex = gameState.currentHand ? handRanks.indexOf(gameState.currentHand) : -1;
-  const selectedHandIndex = handRanks.indexOf(selectedHand);
-
-  if (selectedHandIndex > currentHandIndex) {
-    // Valid trump
-    gameState.currentHand = selectedHand;
-    gameState.statusMessage = `${gameState.currentPlayer} trumped with ${selectedHand}.`;
-    // Switch turn to other player
-    gameState.currentPlayer = getOtherPlayer(gameState.currentPlayer).nickname;
-    gameState.selectingHand = false;
-    io.emit('updateGameState', gameState);
-  } else {
-    // Invalid trump
-    socket.emit('errorMessage', 'Selected hand does not beat the current hand.');
-  }
-}
-
-function incrementCardCount(nickname) {
-  if (gameState.player1.nickname === nickname) {
-    gameState.player1.cardCount += 1;
-  } else if (gameState.player2.nickname === nickname) {
-    gameState.player2.cardCount += 1;
-  }
-}
-
-function getOtherPlayer(nickname) {
-  if (gameState.player1.nickname === nickname) {
-    return gameState.player2;
-  } else {
-    return gameState.player1;
-  }
-}
-
-// Function to check if a hand is possible with given cards
+// Check if the hand is possible with given cards
 function isHandPossible(hand, cards) {
   const values = cards.map(card => card.value);
   const valueCounts = {};
@@ -272,6 +216,253 @@ function isHandPossible(hand, cards) {
     return ['10', 'J', 'Q', 'K', 'A'].every(val => values.includes(val));
   }
   return false;
+}
+
+// =============== SOCKET HANDLERS ===============
+io.on('connection', (socket) => {
+  console.log(`Player connected: ${socket.id}`);
+  broadcastLobbies(); // Send current lobby list to newly connected user
+
+  // Lobby creation
+  socket.on('createLobby', ({ lobbyName, nickname }) => {
+    if (!lobbyName || !nickname) {
+      socket.emit('errorMessage', 'Invalid lobby creation data.');
+      return;
+    }
+
+    const success = createLobby(lobbyName, socket.id);
+    if (!success) {
+      socket.emit('errorMessage', 'Lobby name already exists.');
+      return;
+    }
+
+    // Join the newly created lobby
+    socket.join(lobbyName);
+    const joinResult = joinLobby(lobbyName, socket.id, nickname);
+    if (!joinResult.success) {
+      socket.emit('errorMessage', joinResult.message);
+      return;
+    }
+
+    updateLobby(lobbyName);
+    broadcastLobbies();
+  });
+
+  // Lobby joining
+  socket.on('joinLobby', ({ lobbyName, nickname }) => {
+    if (!lobbyName || !nickname) {
+      socket.emit('errorMessage', 'Invalid lobby join data.');
+      return;
+    }
+
+    if (!lobbies[lobbyName]) {
+      socket.emit('errorMessage', 'Lobby does not exist.');
+      broadcastLobbies();
+      return;
+    }
+
+    socket.join(lobbyName);
+    const joinResult = joinLobby(lobbyName, socket.id, nickname);
+    if (!joinResult.success) {
+      socket.emit('errorMessage', joinResult.message);
+      return;
+    }
+
+    updateLobby(lobbyName);
+    broadcastLobbies();
+  });
+
+  // Start lobby game (only lobby leader can do this)
+  socket.on('startLobbyGame', (lobbyName) => {
+    const lobby = lobbies[lobbyName];
+    if (!lobby) {
+      socket.emit('errorMessage', 'Lobby does not exist.');
+      return;
+    }
+    if (lobby.leaderId !== socket.id) {
+      socket.emit('errorMessage', 'Only the lobby leader can start the game.');
+      return;
+    }
+
+    startGame(lobbyName);
+    updateLobby(lobbyName);
+    broadcastLobbies();
+  });
+
+  // Exit (or leave) the lobby
+  socket.on('exitLobby', () => {
+    leaveLobby(socket.id);
+  });
+
+  // Handle player moves (check/trump)
+  socket.on('playerMove', (data) => {
+    const { lobbyName, move, selectedHand } = data;
+    const lobby = lobbies[lobbyName];
+    if (!lobby || !lobby.gameState) {
+      socket.emit('errorMessage', 'Game not found or not started.');
+      return;
+    }
+
+    const gameState = lobby.gameState;
+    if (gameState.roundEnded) {
+      socket.emit('errorMessage', 'Round has ended or game not started.');
+      return;
+    }
+
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+    if (socket.id !== currentPlayer.id) {
+      socket.emit('errorMessage', 'Not your turn.');
+      return;
+    }
+
+    if (move === 'check') {
+      handleCheckMove(lobbyName);
+    } else if (move === 'trump') {
+      if (gameState.currentHand === null) {
+        if (selectedHand) {
+          handleTrumpMove(lobbyName, selectedHand);
+        } else {
+          gameState.selectingHand = true;
+          io.to(socket.id).emit('updateGameState', gameState);
+        }
+      } else {
+        if (selectedHand) {
+          handleTrumpMove(lobbyName, selectedHand);
+        } else {
+          gameState.selectingHand = true;
+          io.to(socket.id).emit('updateGameState', gameState);
+        }
+      }
+    }
+  });
+
+  // Handle proceed to next round
+  socket.on('proceedNextRound', (lobbyName) => {
+    const lobby = lobbies[lobbyName];
+    if (!lobby || !lobby.gameState) return;
+
+    const gameState = lobby.gameState;
+    const player = lobby.players[socket.id];
+    if (!player) return;
+
+    gameState.playersReady[player.nickname] = true;
+
+    if (Object.values(gameState.playersReady).every(ready => ready)) {
+      // Reset for next round
+      gameState.roundEnded = false;
+      gameState.revealCards = false;
+      for (let nickname in gameState.playersReady) {
+        gameState.playersReady[nickname] = false;
+      }
+
+      // Deal new cards
+      gameState.players.forEach((pl) => {
+        pl.cards = dealCards(pl.cardCount);
+      });
+
+      // Set the losing player as the starting player (if we had a lastRoundLoserIndex)
+      if (gameState.lastRoundLoserIndex !== null) {
+        gameState.currentPlayerIndex = gameState.lastRoundLoserIndex;
+      }
+      gameState.currentHand = null;
+      const currentNickname = gameState.players[gameState.currentPlayerIndex].nickname;
+      gameState.statusMessage = `${currentNickname}'s turn.`;
+
+      io.to(lobbyName).emit('updateGameState', gameState);
+    }
+  });
+
+  // Handle disconnections
+  socket.on('disconnect', () => {
+    console.log(`Player disconnected: ${socket.id}`);
+    leaveLobby(socket.id);
+  });
+});
+
+// =============== HELPER FUNCTIONS FOR MOVES ===============
+function handleCheckMove(lobbyName) {
+  const lobby = lobbies[lobbyName];
+  const gameState = lobby.gameState;
+  const currentIndex = gameState.currentPlayerIndex;
+  const currentPlayer = gameState.players[currentIndex];
+
+  if (gameState.currentHand === null) {
+    io.to(currentPlayer.id).emit('errorMessage', 'Cannot check before any hand is declared.');
+    return;
+  }
+
+  gameState.roundEnded = true;
+  gameState.revealCards = true;
+  const currentHandIndex = handRanks.indexOf(gameState.currentHand);
+
+  // Combine all cards from all players
+  let allCards = [];
+  gameState.players.forEach(pl => {
+    allCards = allCards.concat(pl.cards);
+  });
+  const handPossible = isHandPossible(gameState.currentHand, allCards);
+
+  if (handPossible) {
+    // The hand exists, the player who called check loses
+    incrementCardCount(gameState, currentIndex);
+    gameState.lastRoundLoserIndex = currentIndex;
+    gameState.statusMessage = `${currentPlayer.nickname} checked and the hand was there. ${currentPlayer.nickname} loses the round.`;
+  } else {
+    // The hand does not exist, the previous player in turn order is the 'loser'
+    let previousIndex = (currentIndex - 1 + gameState.players.length) % gameState.players.length;
+    incrementCardCount(gameState, previousIndex);
+    gameState.lastRoundLoserIndex = previousIndex;
+    let loserNickname = gameState.players[previousIndex].nickname;
+    gameState.statusMessage = `${currentPlayer.nickname} checked and the hand was not there. ${loserNickname} loses the round.`;
+  }
+
+  // Check for game over
+  let losers = gameState.players.filter(pl => pl.cardCount >= 6);
+  if (losers.length > 0) {
+    // If multiple players remain, pick the one(s) with fewer than 6 cards as winners
+    let potentialWinners = gameState.players.filter(pl => pl.cardCount < 6);
+    if (potentialWinners.length === 0) {
+      io.to(lobbyName).emit('gameOver', { winner: 'No winners (tie or all busted)' });
+    } else {
+      potentialWinners.sort((a, b) => a.cardCount - b.cardCount);
+      const winner = potentialWinners[0].nickname;
+      io.to(lobbyName).emit('gameOver', { winner });
+    }
+    lobby.gameState = null;
+    lobby.inGame = false;
+    updateLobby(lobbyName);
+    broadcastLobbies();
+  } else {
+    io.to(lobbyName).emit('updateGameState', gameState);
+  }
+}
+
+function handleTrumpMove(lobbyName, selectedHand) {
+  const lobby = lobbies[lobbyName];
+  const gameState = lobby.gameState;
+  const currentIndex = gameState.currentPlayerIndex;
+
+  const currentHandIndex = gameState.currentHand ? handRanks.indexOf(gameState.currentHand) : -1;
+  const selectedHandIndex = handRanks.indexOf(selectedHand);
+
+  if (selectedHandIndex > currentHandIndex) {
+    // Valid trump
+    gameState.currentHand = selectedHand;
+    const currentPlayer = gameState.players[currentIndex];
+    gameState.statusMessage = `${currentPlayer.nickname} trumped with ${selectedHand}.`;
+    gameState.selectingHand = false;
+
+    // Switch turn to next player
+    gameState.currentPlayerIndex = getNextPlayerIndex(gameState, currentIndex);
+    io.to(lobbyName).emit('updateGameState', gameState);
+  } else {
+    // Invalid trump
+    io.to(gameState.players[currentIndex].id).emit('errorMessage', 'Selected hand does not beat the current hand.');
+  }
+}
+
+function incrementCardCount(gameState, playerIndex) {
+  gameState.players[playerIndex].cardCount += 1;
 }
 
 server.listen(PORT, '0.0.0.0', () => {
