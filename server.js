@@ -22,19 +22,52 @@ let lobbies = {};
 
 // Define hands and their rankings
 const handRanks = [
+  // Singles
   'Single 9', 'Single 10', 'Single J', 'Single Q', 'Single K', 'Single A',
+
+  // Doubles
   'Double 9', 'Double 10', 'Double J', 'Double Q', 'Double K', 'Double A',
+
+  // 2 Pairs (new)
+  '2 Pairs 9-10', '2 Pairs 9-J', '2 Pairs 9-Q', '2 Pairs 9-K', '2 Pairs 9-A',
+  '2 Pairs 10-J', '2 Pairs 10-Q', '2 Pairs 10-K', '2 Pairs 10-A',
+  '2 Pairs J-Q', '2 Pairs J-K', '2 Pairs J-A',
+  '2 Pairs Q-K', '2 Pairs Q-A',
+  '2 Pairs K-A',
+
+  // Full House (new)
+  'Full House 9', 'Full House 10', 'Full House J', 'Full House Q', 'Full House K', 'Full House A',
+
+  // Streets
   'Small Street', 'Big Street',
-  'Triple 9', 'Triple 10', 'Triple J', 'Triple Q', 'Triple K', 'Triple A'
+
+  // Triples
+  'Triple 9', 'Triple 10', 'Triple J', 'Triple Q', 'Triple K', 'Triple A',
+
+  // Quadruple (new)
+  'Quadruple 9', 'Quadruple 10', 'Quadruple J', 'Quadruple Q', 'Quadruple K', 'Quadruple A'
 ];
 
 // Define the hands for each category
 const hands = {
   'Singles': ['Single 9', 'Single 10', 'Single J', 'Single Q', 'Single K', 'Single A'],
   'Doubles': ['Double 9', 'Double 10', 'Double J', 'Double Q', 'Double K', 'Double A'],
+  '2 Pairs': [
+    // You can list all two pair combos that you want to allow
+    '2 Pairs 9-10', '2 Pairs 9-J', '2 Pairs 9-Q', '2 Pairs 9-K', '2 Pairs 9-A',
+    '2 Pairs 10-J', '2 Pairs 10-Q', '2 Pairs 10-K', '2 Pairs 10-A',
+    '2 Pairs J-Q', '2 Pairs J-K', '2 Pairs J-A',
+    '2 Pairs Q-K', '2 Pairs Q-A',
+    '2 Pairs K-A'
+  ],
+  'Full Houses': [
+    'Full House 9', 'Full House 10', 'Full House J', 'Full House Q', 'Full House K', 'Full House A'
+  ],
   'Streets': ['Small Street', 'Big Street'],
-  'Triples': ['Triple 9', 'Triple 10', 'Triple J', 'Triple Q', 'Triple K', 'Triple A']
+  'Triples': ['Triple 9', 'Triple 10', 'Triple J', 'Triple Q', 'Triple K', 'Triple A'],
+  'Quadruples': ['Quadruple 9', 'Quadruple 10', 'Quadruple J', 'Quadruple Q', 'Quadruple K', 'Quadruple A']
 };
+
 
 // =============== LOBBY-RELATED FUNCTIONS ===============
 function createLobby(lobbyName, leaderId) {
@@ -204,19 +237,46 @@ function isHandPossible(hand, cards) {
   if (hand.startsWith('Single')) {
     const value = hand.split(' ')[1];
     return values.includes(value);
+
   } else if (hand.startsWith('Double')) {
     const value = hand.split(' ')[1];
     return valueCounts[value] >= 2;
+
   } else if (hand.startsWith('Triple')) {
     const value = hand.split(' ')[1];
     return valueCounts[value] >= 3;
+
+  } else if (hand.startsWith('Quadruple')) {
+    const value = hand.split(' ')[1];
+    return valueCounts[value] >= 4;
+
   } else if (hand === 'Small Street') {
     return ['9', '10', 'J', 'Q', 'K'].every(val => values.includes(val));
+
   } else if (hand === 'Big Street') {
     return ['10', 'J', 'Q', 'K', 'A'].every(val => values.includes(val));
+
+  } else if (hand.startsWith('2 Pairs')) {
+    // Example: '2 Pairs 9-10'
+    // We want to parse the second part to get the two distinct pairs
+    // For a robust approach, handle any combos, or parse the substring.
+    const splitted = hand.split(' ')[2]; // e.g. '9-10'
+    const [v1, v2] = splitted.split('-');
+    return (valueCounts[v1] >= 2 && valueCounts[v2] >= 2);
+
+  } else if (hand.startsWith('Full House')) {
+    // 'Full House 9' might indicate a triple of 9 + any double
+    // But your naming might differ. Suppose "Full House 9" means triple 9 + double X
+    const value = hand.split(' ')[2];
+    if (valueCounts[value] < 3) return false;
+    // Need at least one other value with count >= 2
+    return Object.values(valueCounts).some(count => count >= 2 && count !== valueCounts[value]);
+
   }
+
   return false;
 }
+
 
 // =============== SOCKET HANDLERS ===============
 io.on('connection', (socket) => {

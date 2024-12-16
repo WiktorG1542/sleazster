@@ -37,6 +37,8 @@ const trumpButton = document.getElementById('trumpButton');
 const statusMessageDiv = document.getElementById('statusMessage');
 const proceedContainer = document.getElementById('proceedContainer');
 const proceedButton = document.getElementById('proceedButton');
+const handSelection = document.getElementById('handSelection');
+const handGrid = document.getElementById('handGrid');
 
 // ========== MAIN MENU LOGIC ==========
 mainMenuLobbiesButton.addEventListener('click', () => {
@@ -111,20 +113,18 @@ proceedButton.addEventListener('click', () => {
 
 // =============== SOCKET EVENTS ===============
 
-// Full list of all lobbies
 socket.on('lobbyListUpdate', (allLobbies) => {
-  // Show the list of lobbies that exist
   lobbyListDiv.innerHTML = '';
   allLobbies.forEach((lobby) => {
     let item = document.createElement('div');
     const isInGame = lobby.inGame ? '(In Game)' : '(Waiting)';
-    item.innerHTML = `Lobby: ${lobby.lobbyName} ${isInGame} - Leader: ${lobby.leaderId}<br>Players: ${lobby.players.map(p => p.nickname).join(', ')}`;
+    item.innerHTML = `<strong>${lobby.lobbyName}</strong> ${isInGame} - Leader: ${lobby.leaderId}<br>
+                      Players: ${lobby.players.map(p => p.nickname).join(', ')}`;
     lobbyListDiv.appendChild(item);
     lobbyListDiv.appendChild(document.createElement('hr'));
   });
 });
 
-// Info for a specific lobby the user is in
 socket.on('lobbyUpdate', (data) => {
   const { lobbyName, playerData, leaderId, inGame } = data;
   currentLobbyName = lobbyName;
@@ -134,19 +134,17 @@ socket.on('lobbyUpdate', (data) => {
     // Show waiting room
     lobbyListContainer.style.display = 'none';
     waitingRoomContainer.style.display = 'block';
-    waitingRoomInfo.innerHTML = `Lobby Name: ${lobbyName}<br>`;
-    waitingRoomInfo.innerHTML += 'Players in this lobby:<br>';
+    waitingRoomInfo.innerHTML = `<h2>Lobby: ${lobbyName}</h2>`;
+    waitingRoomInfo.innerHTML += `<p>Players in this lobby:</p>`;
     playerData.forEach((p) => {
       waitingRoomInfo.innerHTML += `- ${p.nickname} ${p.id === leaderId ? '(Leader)' : ''}<br>`;
     });
 
-    // Leader can only start if there's more than 1 player
     if (isLobbyLeader && playerData.length > 1) {
       startGameButton.style.display = 'inline-block';
     } else {
       startGameButton.style.display = 'none';
     }
-    // Everyone can exit/leave
     exitLobbyButton.style.display = 'inline-block';
   } else {
     // Hide waiting room, show game container
@@ -155,7 +153,6 @@ socket.on('lobbyUpdate', (data) => {
   }
 });
 
-// Handle 'startGame' event from server
 socket.on('startGame', (data) => {
   gameState = data;
   waitingRoomContainer.style.display = 'none';
@@ -163,18 +160,15 @@ socket.on('startGame', (data) => {
   updateUI();
 });
 
-// Update game state
 socket.on('updateGameState', (data) => {
   gameState = data;
   updateUI();
 });
 
-// Handle error messages from server
 socket.on('errorMessage', (message) => {
   alert(message);
 });
 
-// Handle game over
 socket.on('gameOver', (data) => {
   alert(`Game Over! Winner: ${data.winner}`);
   location.reload();
@@ -185,40 +179,70 @@ socket.on('gameOver', (data) => {
 function updateUI() {
   if (!gameState) return;
 
-  // Clear the playersContainer
   playersContainer.innerHTML = '';
 
-  // Create UI for each player
-  gameState.players.forEach((pl) => {
+  gameState.players.forEach((pl, index) => {
     const playerDiv = document.createElement('div');
     playerDiv.className = 'playerDiv';
 
+    // Player Name
     const playerName = document.createElement('h2');
     playerName.innerText = pl.nickname;
     playerDiv.appendChild(playerName);
 
+    // Card Count
     const playerScore = document.createElement('div');
+    playerScore.className = 'cardCount';
     playerScore.innerText = `Cards: ${pl.cardCount}`;
     playerDiv.appendChild(playerScore);
 
+    // Cards container
     const cardContainer = document.createElement('div');
     cardContainer.className = 'cardContainer';
 
-    // Reveal cards if gameState.revealCards == true OR if this is the local player's cards
-    let reveal = gameState.revealCards || (pl.nickname === nickname);
+    let reveal = (gameState.revealCards || pl.nickname === nickname);
+
     pl.cards.forEach((card) => {
+      // Use a <div> for the card, or an <img> referencing the sprite
       const cardDiv = document.createElement('div');
+      cardDiv.className = 'card';
+
       if (reveal) {
-        cardDiv.className = 'card';
-        cardDiv.innerText = `${card.value}${card.suit}`;
+        // e.g. card.value = '9', card.suit = '♠'
+        // We'll map these to something like 9S.png (9 of spades)
+        // But your suits are stored in textual form; we can do a quick mapping:
+        let suitChar = card.suit;
+        let suitKey = '';
+        switch(suitChar) {
+          case '♣': suitKey = 'C'; break;
+          case '♦': suitKey = 'D'; break;
+          case '♥': suitKey = 'H'; break;
+          case '♠': suitKey = 'S'; break;
+        }
+
+        // e.g. "9S.png", "10C.png" ...
+        const spriteFilename = `${card.value}${suitKey}.png`; 
+        const cardImg = document.createElement('img');
+        cardImg.src = `/img/cards/${spriteFilename}`;
+        cardImg.className = 'cardFace';
+        cardDiv.appendChild(cardImg);
+
+        // Add a flipping class if we are in reveal mode
+        if (gameState.roundEnded) {
+          cardDiv.classList.add('flip');
+        }
+
       } else {
-        cardDiv.className = 'card back';
-        cardDiv.innerText = '#';
+        // Back of card sprite
+        const cardBackImg = document.createElement('img');
+        cardBackImg.src = `/img/cards/back.png`; 
+        cardBackImg.className = 'cardBack';
+        cardDiv.appendChild(cardBackImg);
       }
       cardContainer.appendChild(cardDiv);
     });
-    playerDiv.appendChild(cardContainer);
 
+    playerDiv.appendChild(cardContainer);
     playersContainer.appendChild(playerDiv);
   });
 
@@ -227,7 +251,6 @@ function updateUI() {
     const currentPlayer = gameState.players[gameState.currentPlayerIndex];
     if (currentPlayer.nickname === nickname) {
       actionButtons.style.display = 'block';
-      // If currentHand is null, disable check at start
       if (gameState.currentHand === null) {
         checkButton.disabled = true;
         checkButton.classList.add('disabled');
@@ -260,7 +283,6 @@ function updateUI() {
   }
 
   // Hand selection grid
-  const handSelection = document.getElementById('handSelection');
   if (gameState.selectingHand && gameState.players[gameState.currentPlayerIndex].nickname === nickname) {
     handSelection.style.display = 'block';
     generateHandGrid();
@@ -270,14 +292,15 @@ function updateUI() {
 }
 
 function generateHandGrid() {
-  const handGrid = document.getElementById('handGrid');
   handGrid.innerHTML = '';
 
   const handRanks = gameState.handRanks;
   const currentHandIndex = gameState.currentHand ? handRanks.indexOf(gameState.currentHand) : -1;
 
-  const handCategories = ['Singles', 'Doubles', 'Streets', 'Triples'];
-  handCategories.forEach((category) => {
+  // We read the categories from gameState.hands
+  const categories = Object.keys(gameState.hands); // e.g. Singles, Doubles, 2 Pairs, etc.
+
+  categories.forEach((category) => {
     const row = document.createElement('div');
     row.className = 'handRow';
 
@@ -304,7 +327,6 @@ function generateHandGrid() {
 
       row.appendChild(handButton);
     });
-
     handGrid.appendChild(row);
   });
 }
