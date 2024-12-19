@@ -6,105 +6,13 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<!-- Main Menu -->
   <div id="mainMenuContainer">
     <div id="mainMenuBox">
-      <!-- Replace with your actual logo path, e.g. /img/obleChLogo.png -->
       <img src="/img/logo.png" alt="OBLECH Logo" id="obleChLogo" />
-
-      <!-- Buttons -->
-      <button id="mainMenuLobbiesButton">LOBBIES</button>
-      <button id="mainMenuHowToPlayButton">HOW TO PLAY</button>
+      <a href="/how-to-play"><button>HOW TO PLAY</button></a>
+      <a href="/lobbies"><button>LOBBIES</button></a>
     </div>
   </div>
-
-<!-- HOW TO PLAY -->
-<div id="howToPlayContainer" style="display: none;">
-  <div id="howToPlayBox">
-    <h2>How To Play OBLECH</h2>
-    <p>
-      Gra składa się z tur, podczas których każdy gracz może przebić zakład poprzedniego gracza
-      lub sprawdzić, czy zakład poprzednika jest spełniony.
-      <!-- Add more instructions here. -->
-    </p>
-    <button id="howToPlayBackButton">GO BACK</button>
-  </div>
-</div>
-
-  <div id="nicknameContainer">
-    <div id="nicknameBox">
-      <h2>Enter your nickname</h2>
-      <input type="text" id="nickname" placeholder="Enter your nickname" />
-      <button id="enterLobbyMenu">Enter</button>
-    </div>
-  </div>
-
-<!-- Lobby list & creation/join container -->
-<div id="lobbyListContainer">
-  <div id="lobbyListBox">
-    <h2>Available Lobbies</h2>
-    <!-- This is where lobbyListUpdate will populate -->
-    <div id="lobbyList" style="margin-bottom: 20px;"></div>
-    
-    <div class="lobbySection">
-      <h3>Create a Lobby</h3>
-      <input type="text" id="createLobbyName" placeholder="Lobby Name" />
-      <button id="createLobby">Create Lobby</button>
-    </div>
-    
-    <div class="lobbySection">
-      <h3>Join a Lobby</h3>
-      <input type="text" id="joinLobbyName" placeholder="Lobby Name" />
-      <button id="joinLobby">Join Lobby</button>
-    </div>
-  </div>
-</div>
-
-<!-- Waiting room container -->
-<div id="waitingRoomContainer" style="display: none;">
-  <div id="waitingRoomBox">
-    <h2 id="waitingRoomTitle"></h2>  <!-- e.g. "Lobby: a" -->
-    <div id="waitingRoomInfo"></div>
-    
-    <!-- Buttons -->
-    <button id="startGame" style="display: none;">Start Game</button>
-    <button id="exitLobby" style="display: none;">Leave Lobby</button>
-  </div>
-</div>
-
-  <!-- NEW: A "table" background for the game -->
-  <div id="gameContainer" style="display: none;">
-    <div id="playersContainer"></div>
-    <div id="actionButtons" style="text-align: center; margin-top: 20px; display: none;">
-      <button id="checkButton">Check</button>
-      <button id="trumpButton">Trump</button>
-    </div>
-
-    <div id="handSelection" style="display: none; margin-top: 20px;">
-      <h3>Select a Hand to Trump</h3>
-      
-      <!-- Category Grid: each category is a tile -->
-      <div id="categoryGrid"></div>
-    
-      <!-- Modal for hands in the chosen category -->
-      <div id="handModal" class="modal">
-        <div class="modal-content">
-          <span id="closeModal" class="close">&times;</span>
-          <h3 id="modalCategoryTitle">Hands</h3>
-          <div id="modalHandOptions" class="modal-hand-options"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="statusMessage" style="text-align: center; margin-top: 20px;"></div>
-
-    <div id="proceedContainer" style="display: none; text-align: center; margin-top: 20px;">
-      <button id="proceedButton">Proceed to Next Round</button>
-    </div>
-  </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="script.js"></script>
+  <!-- We do not need script.js here because we have no socket interactions on this page -->
 </body>
 </html>
