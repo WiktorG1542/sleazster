@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OBLECH - Waiting Room</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+  <h2>Lobby Waiting Room - <%= lobby.lobbyId %></h2>
+  <p><strong>Logged in as <%= nickname %></strong></p>
+  <p><a href="/logout">Logout</a></p>
+  <div id="waitingRoomInfo"></div>
+
+  <div style="margin-top:20px;">
+    <button id="startGameBtn">Start Game (Leader Only)</button>
+  </div>
+
+  <hr/>
+
+  <div style="margin-top:20px;">
+    <button id="exitLobbyBtn">Leave Lobby</button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const lobbyId = "<%= lobby.lobbyId %>";
+</script>
+<script src="/script-waitingRoom.js"></script>
+</body>
+</html>

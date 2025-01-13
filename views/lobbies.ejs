@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OBLECH - Lobbies</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+  <h2>OBLECH - Lobbies</h2>
+  <p><strong>Logged in as <%= nickname %></strong></p>
+  <p>
+    <a href="/">Main</a> | 
+    <a href="/logout">Logout</a>
+  </p>
+  <div style="margin-bottom:20px;">
+    <button id="createLobbyBtn">Create Lobby</button>
+  </div>
+
+  <hr/>
+
+  <div style="margin-bottom:20px;">
+    <input type="text" id="joinLobbyId" placeholder="Lobby ID" />
+    <button id="joinLobbyBtn">Join Lobby</button>
+  </div>
+
+  <hr/>
+
+  <h3>Current Lobbies</h3>
+  <div id="lobbyList"></div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="script-lobbies.js"></script>
+</body>
+</html>

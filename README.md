@@ -12,7 +12,7 @@ To use this little demo, all you have to do is:
 git clone https://github.com/WiktorG1542/sleazster.git
 cd sleazster
 npm install
-node server.js
+npm start
 ```
 
 Then visit the game in your local browser at [http://localhost:3000](http://localhost:3000).

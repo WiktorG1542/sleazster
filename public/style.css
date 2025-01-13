@@ -1,429 +1,103 @@
-/* style.css */
 body {
   font-family: Arial, sans-serif;
-  background: url('/img/table.jpg') repeat center center fixed; 
-  /* ^ 'repeat' will tile the image across the entire body.
-     'fixed' keeps it in place if the page scrolls. 
-     If you want scrolling background, remove 'fixed'. */
-  color: #ecf0f1;
+  background: url('/img/table.jpg') repeat center center fixed;
+  color: #178520;
   margin: 0;
   padding: 0;
 }
 
-/* Basic containers styling */
-#mainMenuContainer, #nicknameContainer, #lobbyListContainer,
-#waitingRoomContainer, #gameContainer {
-  max-width: 1200px;
+.container {
+  max-width: 900px;
   margin: 0 auto;
   padding: 20px;
 }
 
-
-h1, h2, h3 {
-  text-align: center;
-  margin: 10px 0;
+h1, h2, h3, h4 {
+  margin-top: 0;
 }
 
-/* Buttons */
 button {
   background-color: #024f01;
   color: #fff;
   border: none;
-  padding: 10px 20px;
-  font-size: 16px;
+  padding: 10px 16px;
   cursor: pointer;
-  margin: 5px;
-  border-radius: 4px;
-}
-
-button:hover:not(:disabled) {
-  background-color: #024f01;
-}
-button.disabled, button:disabled {
-  background-color: #7f8c8d !important;
-  cursor: not-allowed;
-}
-
-#mainMenuContainer {
-  display: flex;           /* use flex to center the box on the page */
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;        /* makes sure it stretches full screen height */
-  width: 100%;
-}
-
-#mainMenuBox {
-  background-color: #003c00;    /* your desired teal color */
-  padding: 30px 40px;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-
-#mainMenuBox button {
-  display: block;          /* stack them vertically */
-  margin: 10px auto;       /* center horizontally, add vertical margin */
-  width: 200px;            /* uniform button width */
-  background-color: #024f01;
-  /* other button styles as you prefer... */
-}
-
-#obleChLogo {
-  max-width: 200px;        /* scale your logo as needed */
-  margin-bottom: 20px;
-}
-
-/* Nickname Container */
-#nicknameContainer {
-  display: flex;           
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;        /* Full viewport height */
-  width: 100%;
-  /* The background is from the body, so you don't need a separate background here. */
-}
-
-#nicknameBox {
-  background-color: #003c00; /* same color as main menu box */
-  padding: 30px 40px;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-
-#nicknameBox h2 {
-  margin-bottom: 20px;
-}
-
-#nicknameBox input {
-  width: 240px;
-  padding: 10px;
-  font-size: 16px;
-  margin-bottom: 20px; /* spacing below input */
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-#nicknameBox button {
-  display: inline-block;
-  width: 150px;
-  background-color: #024f01;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  margin: 0 auto; 
-  border-radius: 4px;
-}
-
-#nicknameBox button:hover {
-  background-color: #024f01;
-}
-
-#nicknameContainer input {
-  padding: 10px;
-  font-size: 16px;
-}
-
-/* Lobby List Container */
-
-#lobbyListContainer {
-  display: flex;
-  justify-content: center;   /* horizontally center */
-  align-items: center;       /* vertically center */
-  min-height: 100vh;         /* fill the screen’s height */
-  width: 100%;
-  box-sizing: border-box;     /* ensures padding doesn't exceed width/height */
-  /* If there’s a top margin or padding from other elements, remove or override them */
-}
-
-
-#lobbyListBox {
-  background-color: #003c00;
-  padding: 30px 40px;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  max-width: 600px;
-  width: 100%; /* Let the box shrink/grow up to max-width */
-  box-sizing: border-box;
-}
-
-.lobbySection {
-  margin-top: 20px; 
-}
-
-#lobbyListBox input {
-  width: 200px;
-  padding: 8px;
-  font-size: 14px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  margin-right: 10px;
-}
-
-#lobbyListBox button {
-  background-color: #024f01;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 4px;
-  margin-top: 5px;
-}
-
-#lobbyListBox button:hover {
-  background-color: #024f01;
-}
-
-#waitingRoomContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;   /* fill screen vertically */
-  width: 100%;
-}
-
-#waitingRoomBox {
-  background-color: #003c00;  /* same teal color you use everywhere else */
-  padding: 30px 40px;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  max-width: 600px;    /* or another comfortable width */
-  width: 100%;
-  box-sizing: border-box;
-}
-
-#waitingRoomTitle {
-  margin-bottom: 20px;
-}
-
-#waitingRoomInfo {
-  margin-bottom: 20px; /* space before the buttons */
-}
-
-/* Buttons styling if needed to match your design */
-#waitingRoomBox button {
-  display: inline-block;
-  background-color: #024f01;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  margin: 5px;
-  border-radius: 4px;
-}
-
-#waitingRoomBox button:hover {
-  background-color: #024f01;
-}
-/* Game Container */
-#gameContainer {
-  display: none;
-  padding-top: 20px;
-}
-
-/* Players Container */
-#playersContainer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 30px;
-}
-
-.playerDiv {
-  background-color: rgba(0,0,0,0.3);
-  border: 2px solid #34495e;
-  border-radius: 8px;
-  padding: 10px 15px;
-  min-width: 180px;
-  text-align: center;
-}
-
-.cardCount {
-  margin-bottom: 5px;
-}
-
-.cardContainer {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* Card Flip logic */
-.card {
-  width: 80px;
-  height: 120px;
-  perspective: 1000px;
-  position: relative;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-/* The flipping effect can be triggered by adding a class such as .flip */
-.card.flip {
-  animation: flipCard 0.6s forwards;
-}
-
-@keyframes flipCard {
-  from {
-    transform: rotateY(0deg);
-  }
-  to {
-    transform: rotateY(180deg);
-  }
-}
-
-.cardFace, .cardBack {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: contain;
-}
-
-/* Action Buttons */
-#actionButtons {
-  text-align: center;
-  margin-top: 20px;
-  display: none;
-}
-
-/* Status Message */
-#statusMessage {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 1.2em;
-  font-weight: bold;
-}
-
-/* Proceed Container */
-#proceedContainer {
-  text-align: center;
-  margin-top: 20px;
-  display: none;
-}
-
-#handSelection {
-  display: none;
-  margin-top: 20px;
-  text-align: center;
-}
-
-#handGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: flex-start;
-  max-width: 600px;     /* limit width to avoid overflowing on large screens */
-  margin: 10px auto;    /* center horizontally */
-  background-color: rgba(0,0,0,0.3);
-  border-radius: 8px;
-  padding: 10px;
-}
-
-.handRow {
-  display: flex;
-  flex-wrap: wrap;      /* allow wrapping to multiple lines */
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.rowTitle {
-  background-color: #34495e;
-  color: #ecf0f1;
-  padding: 8px 12px;
-  font-weight: bold;
-  border-radius: 4px;
-  margin-right: 10px;
-}
-
-.handButton {
-  background-color: #024f01;
-  color: #fff;
-  border: none;
-  padding: 8px 10px;
   margin: 5px 0;
   border-radius: 4px;
-  cursor: pointer;
-  min-width: 100px;  /* ensures consistent width so they wrap evenly */
-  text-align: center;
 }
 
-.handButton:hover:not(.disabled) {
-  background-color: #024f01;
+button:hover:not(.disabled) {
+  background-color: #025801;
 }
 
-.handButton.disabled {
+button.disabled, button:disabled {
   background-color: #7f8c8d;
   cursor: not-allowed;
 }
 
-/* Overwrite background for rowTitle to differentiate categories */
-.rowTitle {
-  background-color: #34495e;
+input {
+  margin: 5px;
+  padding: 5px;
   border-radius: 4px;
-  padding: 8px;
+  border: 1px solid #ccc;
 }
 
-.miniCard {
-  display: inline-block;
-  width: 30px;    /* or however small you want them */
-  margin: 0 2px;
-  vertical-align: middle;
+.cardContainer {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 5px;
 }
 
+.card {
+  width: 80px;
+  height: 120px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 5px;
+}
+
+.cardFace {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Lobby category tiles & modal for trump selection */
 #categoryGrid {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  max-width: 600px;
-  margin: 0 auto;
-  justify-content: center;
 }
-
 .categoryTile {
   background-color: #34495e;
-  color: #ecf0f1;
-  padding: 12px 20px;
+  padding: 10px 15px;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: bold;
-  min-width: 120px;
-  text-align: center;
-  transition: background-color 0.2s;
 }
-
 .categoryTile:hover {
   background-color: #2c3e50;
 }
 
-/* ========== Modal Styles ========== */
-
+/* Modal overlay */
 .modal {
-  display: none; /* hidden by default */
-  position: fixed; /* stay in place */
-  z-index: 9999;   /* on top */
+  display: none;
+  position: fixed;
+  z-index: 9999;
   left: 0; 
   top: 0;
   width: 100%; 
   height: 100%; 
-  overflow: auto; /* scroll if needed */
-  background-color: rgba(0, 0, 0, 0.5); /* semi-transparent background */
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
   background-color: #003c00;
-  margin: 10% auto; /* 10% from the top and centered */
+  margin: 10% auto;
   padding: 20px;
   border-radius: 8px;
-  width: 400px;     /* fixed width or a % of screen */
+  width: 400px;
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   position: relative;
 }
 
@@ -445,13 +119,11 @@ button.disabled, button:disabled {
   margin-top: 20px;
 }
 
-/* Each specific hand in the modal */
 .handOption {
   background-color: #024f01;
   color: #fff;
   border: none;
   padding: 8px 12px;
-  margin: 4px;
   border-radius: 4px;
   cursor: pointer;
 }
@@ -459,57 +131,4 @@ button.disabled, button:disabled {
 .handOption.disabled {
   background-color: #7f8c8d;
   cursor: not-allowed;
-}
-
-#howToPlayContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  width: 100%;
-}
-
-/* The teal box for how-to-play instructions */
-#howToPlayBox {
-  background-color: #003c00; /* same teal color as other boxes */
-  padding: 30px 40px;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  max-width: 800px;   /* widen for bigger instructions */
-  width: 100%;
-  box-sizing: border-box;
-}
-
-#howToPlayBox h2 {
-  margin-bottom: 20px;
-}
-
-#howToPlayBox p {
-  line-height: 1.5;
-  margin-bottom: 20px;
-}
-
-#howToPlayBox button {
-  display: inline-block;
-  background-color: #024f01;
-  color: #fff;
-  border: none;
-  padding: 12px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-#howToPlayBox button:hover {
-  background-color: #024f01;
-}
-
-@media (max-width: 600px) {
-  #handGrid {
-    max-width: 90%;
-  }
-  .handButton {
-    min-width: 80px; 
-  }
 }

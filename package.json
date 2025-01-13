@@ -1,16 +1,17 @@
 {
-  "name": "sleazster",
+  "name": "oblech-login-sessions",
   "version": "1.0.0",
-  "description": "* Single and multi-player gameplay. * Ability to play against AI opponents. * Modifications of the gameplay flow that players can choose   * Visually appealing design, engaging graphics to enhance the gaming experience. * In-game chat to enable player communication during gameplay.",
-  "main": "index.js",
+  "description": "OBLECH game with sessions-based login and real-time updates",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "express": "^4.21.1",
-    "socket.io": "^4.8.1"
+    "body-parser": "^1.20.2",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "path": "^0.12.7",
+    "socket.io": "^4.6.1"
   }
 }

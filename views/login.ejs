@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OBLECH - Login</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+  <h2>OBLECH - Login</h2>
+  <% if (error) { %>
+    <p style="color:red"><%= error %></p>
+  <% } %>
+  <form action="/login" method="POST">
+    <label>Email:</label><br/>
+    <input type="text" name="email" required /><br/>
+    <label>Nickname:</label><br/>
+    <input type="text" name="nickname" required /><br/>
+    <button type="submit">Login</button>
+  </form>
+</div>
+</body>
+</html>
