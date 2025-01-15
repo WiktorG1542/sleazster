@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OBLECH - Leaderboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+  <h2>OBLECH Leaderboard</h2>
+  <% if (nickname) { %>
+    <p><strong>Logged in as <%= nickname %></strong></p>
+  <% } %>
+  <table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Nickname</th>
+        <th>Wins</th>
+        <th>Email</th>
+      </tr>
+    </thead>
+    <tbody>
+    <% allUsers.forEach(u => { %>
+      <tr>
+        <td><%= u.nickname %></td>
+        <td><%= u.wins %></td>
+        <td><%= u.email %></td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+  <br/>
+  <a href="/">Go Back</a>
+</div>
+</body>
+</html>

@@ -9,13 +9,13 @@
 <div class="container">
   <h2>OBLECH - Login</h2>
   <% if (error) { %>
-    <p style="color:red"><%= error %></p>
+    <p style="color:red;"><%= error %></p>
   <% } %>
   <form action="/login" method="POST">
     <label>Email:</label><br/>
-    <input type="text" name="email" required /><br/>
-    <label>Nickname:</label><br/>
-    <input type="text" name="nickname" required /><br/>
+    <input type="text" name="email" required /><br/><br/>
+    <label>Password:</label><br/>
+    <input type="password" name="password" required /><br/><br/>
     <button type="submit">Login</button>
   </form>
 </div>

@@ -8,21 +8,19 @@
 <body>
 <div class="container">
   <h2>Lobby <%= lobby.lobbyId %> - Game in Progress</h2>
-  <p><strong>Logged in as <%= nickname %></strong></p>
-  <p><a href="/logout">Logout</a></p>
+  <% if (nickname) { %>
+    <p><strong>Logged in as <%= nickname %></strong> | <a href="/logout">Logout</a></p>
+  <% } %>
   <div id="gameContainer"></div>
 
-  <!-- Actions -->
   <div id="actionButtons" style="margin-top:20px;">
     <button onclick="moveCheck()">Check</button>
     <button onclick="openTrumpSelection()">Trump</button>
   </div>
 
-  <!-- Trump Selection UI -->
   <div id="handSelection" style="display:none; margin-top:20px;">
     <h3>Select a Hand to Trump</h3>
     <div id="categoryGrid"></div>
-    <!-- Modal for listing hands in each category -->
     <div id="handModal" class="modal">
       <div class="modal-content">
         <span id="closeModal" class="close">&times;</span>
@@ -32,7 +30,6 @@
     </div>
   </div>
 
-  <!-- Next Round -->
   <div id="nextRoundContainer" style="display:none; margin-top:20px;">
     <button onclick="proceedNextRound()" id="proceedButton">Proceed to Next Round</button>
   </div>

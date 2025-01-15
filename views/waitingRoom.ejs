@@ -8,12 +8,26 @@
 <body>
 <div class="container">
   <h2>Lobby Waiting Room - <%= lobby.lobbyId %></h2>
-  <p><strong>Logged in as <%= nickname %></strong></p>
-  <p><a href="/logout">Logout</a></p>
+  <% if (nickname) { %>
+    <p><strong>Logged in as <%= nickname %></strong> | <a href="/logout">Logout</a></p>
+  <% } %>
+
   <div id="waitingRoomInfo"></div>
 
   <div style="margin-top:20px;">
     <button id="startGameBtn">Start Game (Leader Only)</button>
+  </div>
+
+  <div style="margin-top:20px;">
+    <h4>Add Bot (Leader Only)</h4>
+    <input type="text" id="botNickname" placeholder="bot1 or bot2 etc." />
+    <button id="addBotBtn">Add Bot</button>
+  </div>
+
+  <div style="margin-top:20px;">
+    <h4>Remove Bot (Leader Only)</h4>
+    <input type="text" id="removeBotNickname" placeholder="bot1 or bot2 etc." />
+    <button id="removeBotBtn">Remove Bot</button>
   </div>
 
   <hr/>

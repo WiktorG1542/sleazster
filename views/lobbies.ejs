@@ -8,7 +8,9 @@
 <body>
 <div class="container">
   <h2>OBLECH - Lobbies</h2>
-  <p><strong>Logged in as <%= nickname %></strong></p>
+  <% if (nickname) { %>
+    <p><strong>Logged in as <%= nickname %></strong></p>
+  <% } %>
   <p>
     <a href="/">Main</a> | 
     <a href="/logout">Logout</a>

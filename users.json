@@ -1,0 +1,23 @@
+[
+  {
+    "email": "player1@example.com",
+    "password": "pass",
+    "nickname": "player1",
+    "wins": 0,
+    "logged_in": false
+  },
+  {
+    "email": "player2@example.com",
+    "password": "pass",
+    "nickname": "player2",
+    "wins": 0,
+    "logged_in": false
+  },
+  {
+    "email": "player3@example.com",
+    "password": "pass",
+    "nickname": "player3",
+    "wins": 0,
+    "logged_in": false
+  }
+]

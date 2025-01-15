@@ -1,7 +1,7 @@
 {
-  "name": "oblech-login-sessions",
+  "name": "oblech-mongo-bots",
   "version": "1.0.0",
-  "description": "OBLECH game with sessions-based login and real-time updates",
+  "description": "OBLECH game with MongoDB, bots, wins, and leaderboards",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -11,6 +11,7 @@
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
+    "mongoose": "^6.9.2",
     "path": "^0.12.7",
     "socket.io": "^4.6.1"
   }
