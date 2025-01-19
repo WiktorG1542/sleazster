@@ -13,7 +13,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const PORT = 3000;
+const PORT = 5000;
 const MONGO_URI = 'mongodb://localhost:27018/oblech'; // Adjust if needed
 
 // ============= MONGOOSE SETUP =============
@@ -196,23 +196,31 @@ function getAllValidTrumpHands(currentHand, allHandRanks) {
 
 function makeRandomBotMove(lobby) {
   const gs = lobby.gameState;
-
-  if (!gs || gs.roundEnded) {
-    return;  // The round already ended, do nothing
-  }
+  if (!gs || gs.roundEnded) return;  // The round already ended, do nothing
 
   const currentIndex = gs.currentPlayerIndex;
   const currentPlayer = gs.players[currentIndex];
 
   if (!isBot(currentPlayer.email)) return; // not a bot
 
-  // blockingSleep(1000);
+  // Get all cards on the table (i.e., from *all* players)
+  const allCards = gs.players.flatMap(p => p.cards);
 
-  // If no hand is declared yet (currentHand === null), the bot CANNOT check.
-  // Instead, it picks a random hand from the entire handRanks to 'declare'.
+  // If no hand is declared yet, the bot cannot "check", so it must declare.
   if (!gs.currentHand) {
-    const randomHand = handRanks[Math.floor(Math.random() * handRanks.length)];
-    handleTrumpMove(lobby, randomHand);
+    // 1) Collect all hands from `handRanks`.
+    // 2) Filter only those actually possible with the current table's cards.
+    const allPossibleHands = handRanks.filter(h => isHandPossible(h, allCards));
+
+    // If for some reason no hand is possible, the bot has no better move than to check:
+    if (allPossibleHands.length === 0) {
+      handleCheckMove(lobby);
+    } else {
+      // Otherwise pick a random possible hand
+      const randomHand = allPossibleHands[Math.floor(Math.random() * allPossibleHands.length)];
+      handleTrumpMove(lobby, randomHand);
+    }
+
     updateLobbyPlayersFromGameState(lobby);
     io.to(lobby.lobbyId).emit('gameStateUpdate', {
       lobbyId: lobby.lobbyId,
@@ -221,21 +229,27 @@ function makeRandomBotMove(lobby) {
     return;
   }
 
-  // Otherwise (if there IS a currentHand) we do the normal logic:
+  // If there *is* a currentHand, find all strictly higher-ranked hands...
   const allHigherHands = getAllValidTrumpHands(gs.currentHand, handRanks);
 
-  if (allHigherHands.length === 0) {
-    // Must check
+  // ...but also filter down to those that can actually occur with the table's cards:
+  const allHigherPossibleHands = allHigherHands.filter(h =>
+    isHandPossible(h, allCards)
+  );
+
+  // If no higher hand is actually possible, then the bot must check.
+  if (allHigherPossibleHands.length === 0) {
     handleCheckMove(lobby);
   } else {
-    // 1/3 chance check, 2/3 chance trump
+    // 1/3 chance to check, 2/3 chance to declare a random valid hand
     const r = Math.random();
     if (r < 0.3333) {
       handleCheckMove(lobby);
-      console.log("the bot checked randomly");
+      console.log("Bot decided to check randomly");
     } else {
-      const randIdx = Math.floor(Math.random() * allHigherHands.length);
-      handleTrumpMove(lobby, allHigherHands[randIdx]);
+      const randIdx = Math.floor(Math.random() * allHigherPossibleHands.length);
+      const chosenHand = allHigherPossibleHands[randIdx];
+      handleTrumpMove(lobby, chosenHand);
     }
   }
 

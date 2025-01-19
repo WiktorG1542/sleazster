@@ -6,41 +6,56 @@
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<div class="container">
-  <h2>Lobby Waiting Room - <%= lobby.lobbyId %></h2>
-  <% if (nickname) { %>
-    <p><strong>Logged in as <%= nickname %></strong> | <a href="/logout">Logout</a></p>
-  <% } %>
+  <header class="main-header">
+    <div class="header-logo">
+      <img src="/img/logo.png" alt="OBLECH" />
+    </div>
+    <nav class="main-nav">
+      <a href="/">Home</a>
+      <a href="/lobbies">Lobbies</a>
+      <a href="/how-to-play">How To Play</a>
+      <a href="/leaderboard">Leaderboard</a>
+      <a href="/logout">Logout</a>
+    </nav>
+  </header>
 
-  <div id="waitingRoomInfo"></div>
+  <div class="container">
+    <h2>Lobby Waiting Room - <%= lobby.lobbyId %></h2>
+    <% if (nickname) { %>
+      <p><strong>Logged in as <%= nickname %></strong> 
+         | <a href="/logout">Logout</a></p>
+    <% } %>
 
-  <div style="margin-top:20px;">
-    <button id="startGameBtn">Start Game (Leader Only)</button>
+    <div id="waitingRoomInfo"></div>
+
+    <div class="mt-20">
+      <button id="startGameBtn">Start Game (Leader Only)</button>
+    </div>
+
+    <div class="mt-20">
+      <h4>Add Bot (Leader Only)</h4>
+      <input type="text" id="botNickname" placeholder="bot1 or bot2 etc." />
+      <button id="addBotBtn">Add Bot</button>
+    </div>
+
+    <div class="mt-20">
+      <h4>Remove Bot (Leader Only)</h4>
+      <input type="text" id="removeBotNickname" placeholder="bot1 or bot2 etc." />
+      <button id="removeBotBtn">Remove Bot</button>
+    </div>
+
+    <hr />
+
+    <div class="mt-20">
+      <button id="exitLobbyBtn">Leave Lobby</button>
+    </div>
   </div>
 
-  <div style="margin-top:20px;">
-    <h4>Add Bot (Leader Only)</h4>
-    <input type="text" id="botNickname" placeholder="bot1 or bot2 etc." />
-    <button id="addBotBtn">Add Bot</button>
-  </div>
-
-  <div style="margin-top:20px;">
-    <h4>Remove Bot (Leader Only)</h4>
-    <input type="text" id="removeBotNickname" placeholder="bot1 or bot2 etc." />
-    <button id="removeBotBtn">Remove Bot</button>
-  </div>
-
-  <hr/>
-
-  <div style="margin-top:20px;">
-    <button id="exitLobbyBtn">Leave Lobby</button>
-  </div>
-</div>
-
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  const lobbyId = "<%= lobby.lobbyId %>";
-</script>
-<script src="/script-waitingRoom.js"></script>
+  <!-- Scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const lobbyId = "<%= lobby.lobbyId %>";
+  </script>
+  <script src="/script-waitingRoom.js"></script>
 </body>
 </html>

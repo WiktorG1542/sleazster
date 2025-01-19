@@ -6,31 +6,44 @@
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<div class="container">
-  <h2>OBLECH Leaderboard</h2>
-  <% if (nickname) { %>
-    <p><strong>Logged in as <%= nickname %></strong></p>
-  <% } %>
-  <table border="1" cellpadding="5" cellspacing="0">
-    <thead>
-      <tr>
-        <th>Nickname</th>
-        <th>Wins</th>
-        <th>Email</th>
-      </tr>
-    </thead>
-    <tbody>
-    <% allUsers.forEach(u => { %>
-      <tr>
-        <td><%= u.nickname %></td>
-        <td><%= u.wins %></td>
-        <td><%= u.email %></td>
-      </tr>
-    <% }) %>
-    </tbody>
-  </table>
-  <br/>
-  <a href="/">Go Back</a>
-</div>
+  <header class="main-header">
+    <div class="header-logo">
+      <img src="/img/logo.png" alt="OBLECH" />
+    </div>
+    <nav class="main-nav">
+      <a href="/">Home</a>
+      <a href="/lobbies">Lobbies</a>
+      <a href="/how-to-play">How To Play</a>
+      <a href="/leaderboard">Leaderboard</a>
+      <a href="/logout">Logout</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h2>OBLECH Leaderboard</h2>
+    <% if (nickname) { %>
+      <p><strong>Logged in as <%= nickname %></strong></p>
+    <% } %>
+
+    <!-- Removed table's inline attributes; rely on CSS -->
+    <table>
+      <thead>
+        <tr>
+          <th>Nickname</th>
+          <th>Wins</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% allUsers.forEach(u => { %>
+          <tr>
+            <td><%= u.nickname %></td>
+            <td><%= u.wins %></td>
+            <td><%= u.email %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
 </body>
 </html>

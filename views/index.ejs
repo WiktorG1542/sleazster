@@ -6,17 +6,26 @@
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<div class="container">
-  <h1>Welcome to OBLECH!</h1>
-  <% if (nickname) { %>
-    <p><strong>Logged in as <%= nickname %></strong></p>
-  <% } %>
-  <p>
-    <a href="/lobbies">Go to Lobbies</a> | 
-    <a href="/how-to-play">How to Play</a> |
-    <a href="/leaderboard">Leaderboard</a> |
-    <a href="/logout">Logout</a>
-  </p>
-</div>
+  <!-- Optional top header/nav (if not using partials) -->
+  <header class="main-header">
+    <div class="header-logo">
+      <img src="/img/logo.png" alt="OBLECH" />
+    </div>
+    <nav class="main-nav">
+      <a href="/">Home</a>
+      <a href="/lobbies">Lobbies</a>
+      <a href="/how-to-play">How To Play</a>
+      <a href="/leaderboard">Leaderboard</a>
+      <a href="/logout">Logout</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h1>Welcome to OBLECH!</h1>
+    <% if (nickname) { %>
+      <p><strong>Logged in as <%= nickname %></strong></p>
+    <% } %>
+    <p>This is a fun, exciting card game! Choose an option above to get started.</p>
+  </div>
 </body>
 </html>
