@@ -118,16 +118,37 @@ const handsMap = {
   'Quadruples': ['Quadruple 9','Quadruple 10','Quadruple J','Quadruple Q','Quadruple K','Quadruple A']
 };
 
-function dealCards(count) {
+// function dealCards(count) {
+//   const suits = ['♠','♣','♦','♥'];
+//   const values = ['9','10','J','Q','K','A'];
+//   let cards = [];
+//   for (let i=0; i<count; i++){
+//     const suit = suits[Math.floor(Math.random() * suits.length)];
+//     const value = values[Math.floor(Math.random() * values.length)];
+//     cards.push({ suit, value });
+//   }
+//   return cards;
+// }
+
+function shuffleDeck() {
   const suits = ['♠','♣','♦','♥'];
   const values = ['9','10','J','Q','K','A'];
-  let cards = [];
-  for (let i=0; i<count; i++){
-    const suit = suits[Math.floor(Math.random() * suits.length)];
-    const value = values[Math.floor(Math.random() * values.length)];
-    cards.push({ suit, value });
+  let deck = [];
+
+  // Build the 24-card deck
+  for (let s = 0; s < suits.length; s++) {
+    for (let v = 0; v < values.length; v++) {
+      deck.push({ suit: suits[s], value: values[v] });
+    }
   }
-  return cards;
+
+  // Shuffle the deck (Fisher-Yates)
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+
+  return deck;
 }
 
 function isHandPossible(hand, cards) {
@@ -498,13 +519,15 @@ app.post('/api/game', requireLogin, async (req, res) => {
       }
       lb.inGame = true;
       // Build array
+      const deck = shuffleDeck();
       let arr = allPlayers.map(k => {
         let p = lb.players[k];
         return {
           email: p.email,
           nickname: p.nickname,
           cardCount: 1,
-          cards: dealCards(1),
+          // cards: dealCards(1),
+          cards: deck.splice(0, 1),
           score: p.score
         };
       });
@@ -598,8 +621,9 @@ app.post('/api/game', requireLogin, async (req, res) => {
         for (let em in gs.playersReady) {
           gs.playersReady[em]=false;
         }
+        gs.deck = shuffleDeck();
         gs.players.forEach(pl => {
-          pl.cards = dealCards(pl.cardCount);
+          pl.cards = gs.deck.splice(0, pl.cardCount);
         });
         if (gs.lastRoundLoserIndex!==null) {
           if (gs.lastRoundLoserIndex>=gs.players.length) {
@@ -762,13 +786,17 @@ function restartGame(lobby) {
     return;
   }
   lobby.inGame=true;
+
+  const deck = shuffleDeck();
+
   let arr= allEmails.map(e=>{
     let p=lobby.players[e];
     return {
       email:p.email,
       nickname:p.nickname,
       cardCount:1,
-      cards:dealCards(1),
+      // cards:dealCards(1),
+      cards: deck.splice(0, 1),
       score:p.score
     };
   });
@@ -856,8 +884,9 @@ function doBotProceedIfNeeded(lobby) {
           Object.keys(gs.playersReady).forEach(em => {
             gs.playersReady[em] = false;
           });
+          gs.deck = shuffleDeck();
           gs.players.forEach(p => {
-            p.cards = dealCards(p.cardCount);
+            p.cards = gs.deck.splice(0, p.cardCount);
           });
           if (gs.lastRoundLoserIndex !== null) {
             if (gs.lastRoundLoserIndex >= gs.players.length) {
