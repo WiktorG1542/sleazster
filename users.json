@@ -19,5 +19,47 @@
     "nickname": "player3",
     "wins": 0,
     "logged_in": false
+  },
+  {
+    "email": "player4@example.com",
+    "password": "pass",
+    "nickname": "player4",
+    "wins": 0,
+    "logged_in": false
+  },
+  {
+    "email": "player5@example.com",
+    "password": "pass",
+    "nickname": "player5",
+    "wins": 0,
+    "logged_in": false
+  },
+  {
+    "email": "player6@example.com",
+    "password": "pass",
+    "nickname": "player6",
+    "wins": 0,
+    "logged_in": false
+  },
+  {
+    "email": "player7@example.com",
+    "password": "pass",
+    "nickname": "player7",
+    "wins": 0,
+    "logged_in": false
+  },
+  {
+    "email": "player8@example.com",
+    "password": "pass",
+    "nickname": "player8",
+    "wins": 0,
+    "logged_in": false
+  },
+  {
+    "email": "player9@example.com",
+    "password": "pass",
+    "nickname": "player9",
+    "wins": 0,
+    "logged_in": false
   }
 ]

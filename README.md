@@ -1,102 +1,134 @@
-# First single player demo
+# OBLECH - MongoDB Game with Bots and Leaderboard
 
-This simple single player demo showcases the card structures
-in a very simple "War" card game format. The front-end is just
-pure HTML and CSS, but as a whole it provides a base that we can
-expand upon and further develop, starting probably with the
-full game logic.
+OBLECH is a multiplayer card game enhanced with MongoDB for database management and bots for automated gameplay. This README provides an overview of the game, the dependencies, the tech stack, and detailed installation and usage instructions.
 
-To use this little demo, all you have to do is:
+---
 
-```
-git clone https://github.com/WiktorG1542/sleazster.git
-cd sleazster
-npm install
-npm start
-```
+## Features
 
-Then visit the game in your local browser at [http://localhost:3000](http://localhost:3000).
-You can visit the game from other devices connected to the same network by changing localhost to the ip adress of the host
+- **Multiplayer Gameplay**: Connect with other players and compete in real-time.
+- **Database-Backed**: MongoDB is used to store user data, game states, and leaderboards.
+- **Bots**: Add bots to games for solo or mixed gameplay.
+- **Leaderboards**: Track wins and compare scores with other players.
+- **Responsive UI**: User-friendly interface for easy navigation and interaction.
 
-## things to add
+---
 
-* all of the hands
-* also make the icons of the hands be "1A" instead of "Single A"
-* cards not getting smaller as the game progresses and you have more
-* the player that loses should start the next round
-* after a game is over, the players dont reconnect - instead the
-next game starts automatically, and a score of won games is kept
+## Tech Stack
 
-# Functionalities
+- **Backend**: Node.js, Express.js
+- **Frontend**: EJS Templates, HTML, CSS
+- **Database**: MongoDB
+- **Realtime Communication**: Socket.IO
+- **Deployment**: Docker, optional ngrok for external access
 
-* Single and multi-player gameplay.
-* Ability to play against AI opponents.
-* Modifications of the gameplay flow that players can choose  
-* Visually appealing design, engaging graphics
-to enhance the gaming experience.
-* In-game chat to enable player communication during gameplay.
+---
 
-# Technologies
+## Dependencies
 
-To create a robust and engaging card game website that works seamlessly
-on both desktop and mobile devices, we will pick out and utilize **SOME**
-of the following technologies:
-* Node.js
-* Express
-* Socket.IO
-* React
-* Redux
-* Pixi.js
-* Bootstrap
+The project uses the following npm packages:
+- `express`
+- `ejs`
+- `socket.io`
+- `mongoose`
+- `express-session`
+- `body-parser`
 
-## Deployment:
+---
 
-* Node.js Environment: The backend might be set up as a Node.js
-application, managing real-time data and user interactions effectively.
-* Docker: For containerizing the application, making it easy to
-deploy across different environments.
-* GitHub Actions: For CI/CD to automate testing and deployment
-processes.
+## Installation Instructions
 
-## Mobile Responsiveness:
+### Prerequisites
 
-Responsive Web Design: Using media queries and flexible layouts to
-ensure the game is playable on various devices, including smartphones
-and tablets.
+Ensure you have the following installed:
+- **Node.js**: `>=16.0`
+- **MongoDB**: (Managed via Docker in this setup)
+- **Docker**
 
-# FrontEnd design
+---
 
-Here are some mind maps of various views that will be accessible to
-the end user when playing:
+### Steps to Set Up Locally (Without ngrok)
 
-![](./img/1.jpg)
+1. **Clone the repository**:
+   ```
+   git clone https://github.com/your-repo/oblech.git
+   cd oblech
+   ```
 
-![](./img/2.jpg)
+2. **Install Node.js dependencies**:
+   ```
+   npm install
+   ```
 
-![](./img/3.jpg)
+3. **Set up MongoDB with Docker**:
+   Use the provided `run-and-load.sh` script to start a MongoDB container and populate it with initial data.
+   ```
+   ./run-and-load.sh
+   ```
 
-# Roadmap (until december)
-The plan for november is to build a demo singleplayer version of the base game, to present the 
-mechanics at the core of the game and get familiar with the technologies we will be using. 
+4. **Start the server**:
+   ```
+   npm start
+   ```
 
-## 29.10 - 05.11
+5. **Access the game**:
+   Open your browser and navigate to:
+   ```
+   http://localhost:5000
+   ```
 
-Implementation of card structures and rudimentary frontend.
-Backend + Frontend
+---
 
-## 05.11 - 12.11
+### Steps to Enable External Access (With ngrok)
 
-Implementation of card dealing mechanics and main game loop element (Lying, checking, declaring)
-Backend + Frontend
+1. **Install ngrok**:
+   ```
+    curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+        | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
+        && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+        | sudo tee /etc/apt/sources.list.d/ngrok.list \
+        && sudo apt update \
+        && sudo apt install ngrok
+   ```
 
-## 12.11 - 19.11
+2. **Authenticate ngrok**:
+   Sign up on the [ngrok website](https://ngrok.com) and get your authtoken. Then authenticate:
+   ```
+   ngrok config add-authtoken <your-authtoken>
+   ```
 
-Implementation of round ending and giving penalties to losing players
-Frontend + Backend
-Testing and debugging
+3. **Start the server**:
+   ```
+   npm start
+   ```
 
-## 19.11 - 26.11
+4. **Expose your server via ngrok**:
+   Run the following to expose port 5000:
+   ```
+   ngrok http 5000
+   ```
 
-Final polish of the prototype, simple main menu
+5. **Share the URL**:
+   ngrok will provide a public URL (e.g., `https://1234-5678.ngrok.io`). Share this URL with other players to enable multiplayer.
 
+---
 
+## How to Play
+
+1. **Login/Register**:
+   Use the preloaded users from `users.json`.
+
+2. **Create or Join Lobbies**:
+   - Create a lobby to start a game.
+   - Join an existing lobby using its unique ID.
+
+3. **Gameplay**:
+   - Take turns declaring hands or challenging others.
+   - Use bots for practice or to fill out the player slots.
+
+4. **Leaderboards**:
+   Track your performance and compare it with others.
+
+---
+
+Enjoy the game!
