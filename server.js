@@ -88,35 +88,69 @@ lobbies[lobbyId] = {
 
 // ============= HAND & GAME LOGIC =============
 const handRanks = [
-  'Single 9','Single 10','Single J','Single Q','Single K','Single A',
-  'Double 9','Double 10','Double J','Double Q','Double K','Double A',
-  '2 Pairs 9-10','2 Pairs 9-J','2 Pairs 9-Q','2 Pairs 9-K','2 Pairs 9-A',
-  '2 Pairs 10-J','2 Pairs 10-Q','2 Pairs 10-K','2 Pairs 10-A',
-  '2 Pairs J-Q','2 Pairs J-K','2 Pairs J-A',
-  '2 Pairs Q-K','2 Pairs Q-A','2 Pairs K-A',
-  'Full House 9','Full House 10','Full House J','Full House Q','Full House K','Full House A',
-  'Small Street','Big Street',
-  'Triple 9','Triple 10','Triple J','Triple Q','Triple K','Triple A',
-  'Quadruple 9','Quadruple 10','Quadruple J','Quadruple Q','Quadruple K','Quadruple A'
+  // Singles
+  'Single 9', 'Single 10', 'Single J', 'Single Q', 'Single K', 'Single A',
+
+  // Doubles
+  'Double 9', 'Double 10', 'Double J', 'Double Q', 'Double K', 'Double A',
+
+  // 2 Pairs
+  '2 Pairs 9-10', '2 Pairs 9-J', '2 Pairs 9-Q', '2 Pairs 9-K', '2 Pairs 9-A',
+  '2 Pairs 10-9', '2 Pairs 10-J', '2 Pairs 10-Q', '2 Pairs 10-K', '2 Pairs 10-A',
+  '2 Pairs J-9', '2 Pairs J-10', '2 Pairs J-Q', '2 Pairs J-K', '2 Pairs J-A',
+  '2 Pairs Q-9', '2 Pairs Q-10', '2 Pairs Q-J', '2 Pairs Q-K', '2 Pairs Q-A',
+  '2 Pairs K-9', '2 Pairs K-10', '2 Pairs K-J', '2 Pairs K-Q', '2 Pairs K-A',
+  '2 Pairs A-9', '2 Pairs A-10', '2 Pairs A-J', '2 Pairs A-Q', '2 Pairs A-K',
+
+  // Streets
+  'Small Street', 'Big Street',
+
+  // Triples
+  'Triple 9', 'Triple 10', 'Triple J', 'Triple Q', 'Triple K', 'Triple A',
+
+  // Full Houses
+  'Full House 9-10', 'Full House 9-J', 'Full House 9-Q', 'Full House 9-K', 'Full House 9-A',
+  'Full House 10-9', 'Full House 10-J', 'Full House 10-Q', 'Full House 10-K', 'Full House 10-A',
+  'Full House J-9', 'Full House J-10', 'Full House J-Q', 'Full House J-K', 'Full House J-A',
+  'Full House Q-9', 'Full House Q-10', 'Full House Q-J', 'Full House Q-K', 'Full House Q-A',
+  'Full House K-9', 'Full House K-10', 'Full House K-J', 'Full House K-Q', 'Full House K-A',
+  'Full House A-9', 'Full House A-10', 'Full House A-J', 'Full House A-Q', 'Full House A-K',
+
+  // Quadruples
+  'Quadruple 9', 'Quadruple 10', 'Quadruple J', 'Quadruple Q', 'Quadruple K', 'Quadruple A'
 ];
+
 
 const handsMap = {
   'Singles': ['Single 9', 'Single 10', 'Single J', 'Single Q', 'Single K', 'Single A'],
+  
   'Doubles': ['Double 9', 'Double 10', 'Double J', 'Double Q', 'Double K', 'Double A'],
+  
   '2 Pairs': [
-    '2 Pairs 9-10','2 Pairs 9-J','2 Pairs 9-Q','2 Pairs 9-K','2 Pairs 9-A',
-    '2 Pairs 10-J','2 Pairs 10-Q','2 Pairs 10-K','2 Pairs 10-A',
-    '2 Pairs J-Q','2 Pairs J-K','2 Pairs J-A',
-    '2 Pairs Q-K','2 Pairs Q-A',
-    '2 Pairs K-A'
+    '2 Pairs 9-10', '2 Pairs 9-J', '2 Pairs 9-Q', '2 Pairs 9-K', '2 Pairs 9-A',
+    '2 Pairs 10-9', '2 Pairs 10-J', '2 Pairs 10-Q', '2 Pairs 10-K', '2 Pairs 10-A',
+    '2 Pairs J-9', '2 Pairs J-10', '2 Pairs J-Q', '2 Pairs J-K', '2 Pairs J-A',
+    '2 Pairs Q-9', '2 Pairs Q-10', '2 Pairs Q-J', '2 Pairs Q-K', '2 Pairs Q-A',
+    '2 Pairs K-9', '2 Pairs K-10', '2 Pairs K-J', '2 Pairs K-Q', '2 Pairs K-A',
+    '2 Pairs A-9', '2 Pairs A-10', '2 Pairs A-J', '2 Pairs A-Q', '2 Pairs A-K'
   ],
-  'Full Houses': [
-    'Full House 9','Full House 10','Full House J','Full House Q','Full House K','Full House A'
-  ],
+
   'Streets': ['Small Street', 'Big Street'],
-  'Triples': ['Triple 9','Triple 10','Triple J','Triple Q','Triple K','Triple A'],
-  'Quadruples': ['Quadruple 9','Quadruple 10','Quadruple J','Quadruple Q','Quadruple K','Quadruple A']
+
+  'Triples': ['Triple 9', 'Triple 10', 'Triple J', 'Triple Q', 'Triple K', 'Triple A'],
+  
+  'Full Houses': [
+    'Full House 9-10', 'Full House 9-J', 'Full House 9-Q', 'Full House 9-K', 'Full House 9-A',
+    'Full House 10-9', 'Full House 10-J', 'Full House 10-Q', 'Full House 10-K', 'Full House 10-A',
+    'Full House J-9', 'Full House J-10', 'Full House J-Q', 'Full House J-K', 'Full House J-A',
+    'Full House Q-9', 'Full House Q-10', 'Full House Q-J', 'Full House Q-K', 'Full House Q-A',
+    'Full House K-9', 'Full House K-10', 'Full House K-J', 'Full House K-Q', 'Full House K-A',
+    'Full House A-9', 'Full House A-10', 'Full House A-J', 'Full House A-Q', 'Full House A-K'
+  ],
+
+  'Quadruples': ['Quadruple 9', 'Quadruple 10', 'Quadruple J', 'Quadruple Q', 'Quadruple K', 'Quadruple A']
 };
+
 
 // function dealCards(count) {
 //   const suits = ['♠','♣','♦','♥'];
@@ -178,10 +212,10 @@ function isHandPossible(hand, cards) {
     const [v1,v2] = splitted.split('-');
     return (valueCounts[v1]>=2 && valueCounts[v2]>=2);
   } else if (hand.startsWith('Full House')) {
-    const val = hand.split(' ')[2];
-    if (!valueCounts[val] || valueCounts[val]<3) return false;
-    // Need another val >=2
-    return Object.entries(valueCounts).some(([k,ct]) => k!==val && ct>=2);
+    const [, threeVal, twoVal] = hand.split(' ')[2].split('-'); // Extract the triplet and pair values
+    if (!valueCounts[threeVal] || valueCounts[threeVal] < 3) return false; // Check for three of a kind
+    if (!valueCounts[twoVal] || valueCounts[twoVal] < 2) return false; // Check for a pair
+    return true;
   }
   return false;
 }
